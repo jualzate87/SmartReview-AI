@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { ArrowLeft, DotsSix, Panel, ChevronLeft } from '@design-systems/icons'
+import { Button } from '@ids-ts/button'
+import '@ids-ts/button/dist/main.css'
 
 function VerticalGripIcon() {
   return (
@@ -77,17 +79,7 @@ export default function DataReviewPage() {
     setSelectedField(null)
   }, [])
 
-  // Auto-open agent panel when launched from SmartReturn via ?agent=true
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.hash.split('?')[1] || '')
-    if (params.get('agent') === 'true') {
-      setAgentView('loading')
-      setTimeout(() => {
-        setAgentView('report')
-        sessionStorage.setItem('agentLoaded', '1')
-      }, 2200)
-    }
-  }, [])
+  // Auto-open removed — agent panel is user-triggered via "Start guided review" button
 
   const handleAgentOpen = (subView?: 'overview' | 'yoyDetail') => {
     setSelectedField(null)
@@ -250,6 +242,11 @@ export default function DataReviewPage() {
           <span className={styles.headerTitle}>Data Review - Form 1040</span>
         </div>
         <div className={styles.headerRight}>
+          {agentView === 'idle' && (
+            <Button priority="primary" onClick={() => handleAgentOpen()}>
+              Start guided review
+            </Button>
+          )}
           <button
             className={`${styles.intuitIntelBtn} ${rightPanelVisible && agentView === 'idle' ? styles.intuitIntelBtnActive : ''}`}
             aria-label="Toggle panel"
