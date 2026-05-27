@@ -28,7 +28,7 @@ export default function SmartReturnPage() {
   }, [])
 
   const handleReviewReturn = () => {
-    navigate('/data-review')
+    window.open(`${window.location.origin}${window.location.pathname}#/data-review?agent=true`, '_blank')
   }
 
   return (
