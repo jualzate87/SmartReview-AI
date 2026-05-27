@@ -13,7 +13,6 @@ import AutomatedOnboardingPage from './pages/AutomatedOnboardingPage'
 import DataReviewPage from './pages/DataReviewPage'
 import DataReviewPopout from './pages/DataReviewPopout'
 import SmartReturnPage from './pages/SmartReturnPage'
-import ReadyToImportPage from './pages/ReadyToImportPage'
 import CheckReturnPage from './pages/CheckReturnPage'
 import ReturnInsightsPage from './pages/ReturnInsightsPage'
 import WorkspacePage from './pages/WorkspacePage'
@@ -52,7 +51,6 @@ export default function App() {
               <Route path="/onboarding" element={<OnboardingPage />} />
               <Route path="/import" element={<ImportPage />} />
               <Route path="/automated-onboarding" element={<AutomatedOnboardingPage />} />
-              <Route path="/ready-to-import" element={<ReadyToImportPage />} />
               <Route path="/smart-return" element={<SmartReturnPage />} />
               <Route path="/check-return" element={<CheckReturnPage />} />
               <Route path="/check-return/insights" element={<ReturnInsightsPage />} />
