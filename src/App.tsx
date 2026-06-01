@@ -9,6 +9,8 @@ import { FUSION_CONFIG } from './navigation'
 import { getConfig, applyTheme } from './config'
 import OnboardingPage from './pages/OnboardingPage'
 import ImportPage from './pages/ImportPage'
+import ReadyToImportPage from './pages/ReadyToImportPage'
+import OpenReturnPage from './pages/OpenReturnPage'
 import AutomatedOnboardingPage from './pages/AutomatedOnboardingPage'
 import DataReviewPage from './pages/DataReviewPage'
 import DataReviewPopout from './pages/DataReviewPopout'
@@ -48,16 +50,12 @@ export default function App() {
         <HashRouter>
           <FusionProvider pathPrefix={FUSION_CONFIG.pathPrefix || ''}>
             <Routes>
-              <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/import" element={<ImportPage />} />
-              <Route path="/automated-onboarding" element={<AutomatedOnboardingPage />} />
+              <Route path="/import-hub" element={<OpenReturnPage />} />
               <Route path="/smart-return" element={<SmartReturnPage />} />
-              <Route path="/check-return" element={<CheckReturnPage />} />
-              <Route path="/check-return/insights" element={<ReturnInsightsPage />} />
               <Route path="/data-review" element={<DataReviewPage />} />
               <Route path="/data-review-popout" element={<DataReviewPopout />} />
               <Route element={<AppLayout />}>
-                <Route path="/" element={<Navigate to="/home" replace />} />
+                <Route path="/" element={<Navigate to="/import-hub" replace />} />
                 <Route path="/home" element={<HomePage />} />
                 <Route path="/workspace" element={<WorkspacePage />} />
                 {APP_PAGES.map(({ path, component: Page }) => (

@@ -20,7 +20,7 @@
 
 /* "JOHNSON TAX" — 14px Demi, uppercase, tracking 0.5px */
 .businessName {
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -52,7 +52,7 @@
 .navBtn svg { color: #5d686f; }
 
 .navBtnLabel {
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 14px;
   font-weight: 500;
   line-height: 20px;
@@ -73,9 +73,9 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #0097e6;
+  background: #205ea3;
   color: #ffffff;
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 16px;
   font-weight: 600;
   display: flex;
@@ -107,7 +107,7 @@
 
 /* Jordan Wells — 16px Bold, 2 lines */
 .clientName {
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 19px;
@@ -137,7 +137,7 @@
 .clientProfileBtn svg { color: #5d686f; }
 
 .clientProfileLabel {
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
@@ -164,7 +164,7 @@
 }
 
 .metaLabel {
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -180,7 +180,7 @@
 }
 
 .metaValue {
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 16px;
   font-weight: 700;
   line-height: 24px;
@@ -215,7 +215,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 16px;
   font-weight: 600;
   color: #ffffff;
@@ -241,7 +241,7 @@
   cursor: pointer;
   padding: 6px 4px 6px 8px;
   border-radius: 4px;
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
@@ -293,7 +293,7 @@
   background: none;
   border: none;
   border-bottom: 2px solid transparent;
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -339,7 +339,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: 'AvenirNext forINTUIT', sans-serif;
+  font-family: 'Avenir Next forINTUIT', sans-serif;
   font-size: 12px;
   font-weight: 500;
   line-height: 16px;

@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { Plus, ChevronLeft, CircleCheck, Panel } from '@design-systems/icons'
+import { useState, useEffect } from 'react'
+import { Plus, ChevronLeft, ChevronRight, CircleCheck, Panel } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import sendArrow from '../../assets/send-arrow.svg'
+import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
 
 interface YoYDetailPaneProps {
@@ -16,6 +17,9 @@ interface YoYDetailPaneProps {
   closing?: boolean
   /** Set of reviewed field names — used to persist reviewed state across remounts */
   reviewedFields?: Set<string>
+  issueNumber?: number
+  onPrev?: () => void
+  onNext?: () => void
 }
 
 const TABLE_ROWS = [
@@ -27,7 +31,7 @@ const TABLE_ROWS = [
 // The 1040 field this finding maps to
 const FINDING_FIELD = 'wages'
 
-export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields }: YoYDetailPaneProps) {
+export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields, issueNumber, onPrev, onNext }: YoYDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   // Derive reviewed state from parent set so it survives remounts
   const isReviewed = reviewedFields?.has(FINDING_FIELD) ?? false
@@ -38,6 +42,13 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
     }
   }
 
+  // Dismiss any lingering tooltips from the pane that just slid out
+  useEffect(() => {
+    document.querySelectorAll(':hover').forEach(el =>
+      el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }))
+    )
+  }, [])
+
   return (
     <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
 
@@ -45,7 +56,7 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
       <div className={styles.pane}>
         <div className={styles.chat}>
 
-          {/* Back + unified progress row */}
+          {/* Back + progress row */}
           <div className={styles.navRow}>
             <button className={styles.backLink} onClick={onBack}>
               <ChevronLeft size="small" />
@@ -65,7 +76,12 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
           {/* Title row */}
           <div className={styles.titleRow}>
             <span className={styles.dot} />
-            <span className={styles.issueTitle}>Significant income drop</span>
+            <span className={styles.issueTitle} style={{ flex: 1 }}>
+              {issueNumber != null && (
+                <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
+              )}
+              Significant income drop
+            </span>
           </div>
 
           {/* Summary */}
@@ -118,22 +134,39 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             </ul>
           </div>
 
-          {/* Action buttons */}
+          {/* Action buttons + nav arrows in one row */}
           <div className={styles.actionButtons}>
-            {isReviewed ? (
-              <button className={styles.reviewedBtn} disabled>
-                <CircleCheck size="small" />
-                <span>Reviewed</span>
-              </button>
-            ) : (
-              <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
-                <CircleCheck size="small" /> Mark as reviewed
+            <Tooltip text="Open the W-2 source documents to compare wages side-by-side and update any values">
+              <Button priority="primary" size="small" onClick={onReviewSource ?? onViewW2}>
+                <Panel size="small" /> View source
               </Button>
+            </Tooltip>
+            {isReviewed ? (
+              <Tooltip text="You've already marked this finding as reviewed">
+                <button className={styles.reviewedBtn} disabled>
+                  <CircleCheck size="small" />
+                  <span>Reviewed</span>
+                </button>
+              </Tooltip>
+            ) : (
+              <Tooltip text="Confirm you've checked this finding — it will be tracked in your review progress">
+                <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
+                  <CircleCheck size="small" /> Mark as reviewed
+                </Button>
+              </Tooltip>
             )}
-            <Button priority="secondary" size="small" onClick={onReviewSource ?? onViewW2}>
-              <Panel size="small" /> Review source and input
-            </Button>
+            {(onPrev || onNext) && (
+              <div className={styles.navArrowRow}>
+                <button className={styles.navIconBtn} aria-label="Previous issue" onClick={onPrev} disabled={!onPrev}>
+                  <ChevronLeft size="small" />
+                </button>
+                <button className={styles.navIconBtn} aria-label="Next issue" onClick={onNext} disabled={!onNext}>
+                  <ChevronRight size="small" />
+                </button>
+              </div>
+            )}
           </div>
+
 
         </div>
       </div>

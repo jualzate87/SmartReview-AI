@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
-import { Refresh } from '@design-systems/icons'
+import { useEffect, useRef, useState } from 'react'
+import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 // Realistic 1099-INT data for MegaBank
@@ -43,16 +43,45 @@ const FORM_DATA = {
 interface DetailFields1099Props {
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
+  onFieldSelect?: (field: string) => void
+  fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
+  onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
+  onMarkReviewed?: (field: string) => void
+  reviewedFields?: Set<string>
 }
 
-export default function DetailFields1099({ selectedField, highlightMode = 'blue' }: DetailFields1099Props) {
+export default function DetailFields1099({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields }: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
+  const [editingField, setEditingField] = useState<string | null>(null)
+  const [draftValue, setDraftValue] = useState('')
+  const [savedField, setSavedField] = useState<string | null>(null)
+  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
       highlightedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }, [selectedField])
+
+  const [originalValue, setOriginalValue] = useState('')
+
+  const startEdit = (field: string, currentValue: string) => {
+    const clean = currentValue.replace(/,/g, '')
+    setEditingField(field)
+    setDraftValue(clean)
+    setOriginalValue(clean)
+  }
+
+  const commitEdit = (field: 'taxableInterest') => {
+    const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+    onFieldValueChange?.(field, num)
+    setEditingField(null)
+    setEditedFields(prev => new Set(prev).add(field))
+    setSavedField(field)
+    setTimeout(() => setSavedField(null), 3500)
+  }
+
+  const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
 
   return (
     <div className={styles.container}>
@@ -71,7 +100,6 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(a) Payer's federal ID number (EIN)</span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={PAYER_DATA.ein} />
-          <button className={styles.refreshBtn} aria-label="Refresh"><Refresh size="medium" /></button>
         </div>
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(b) Payer's name</span>
@@ -124,9 +152,36 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
         <div
           ref={selectedField === 'taxableInterest' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+          onClick={() => onFieldSelect?.('taxableInterest')}
+          style={{ cursor: 'pointer' }}
         >
           <span className={styles.fieldLabel}>(1) Interest income</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`} readOnly value={FORM_DATA.box1_interest} />
+          <input
+            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'taxableInterest' ? styles.fieldInputEditing : selectedField === 'taxableInterest' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+            readOnly={editingField !== 'taxableInterest'}
+            value={editingField === 'taxableInterest' ? draftValue : (fieldValues?.taxableInterest !== undefined ? fieldValues.taxableInterest.toLocaleString() : FORM_DATA.box1_interest)}
+            onChange={e => setDraftValue(e.target.value)}
+            autoFocus={editingField === 'taxableInterest'}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('taxableInterest') } if (e.key === 'Escape') cancelEdit() }}
+            onClick={e => e.stopPropagation()}
+          />
+          {selectedField === 'taxableInterest' && editingField !== 'taxableInterest' && !reviewedFields?.has('taxableInterest') && (
+            <>
+              <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('taxableInterest', fieldValues?.taxableInterest?.toString() ?? FORM_DATA.box1_interest) }}>Edit</button>
+              <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('taxableInterest'); onFieldSelect?.('taxableInterest') }}>Mark as correct</button>
+            </>
+          )}
+          {selectedField === 'taxableInterest' && editingField !== 'taxableInterest' && reviewedFields?.has('taxableInterest') && (
+            <span className={styles.reviewedBadge}>✓ Reviewed</span>
+          )}
+          {editingField === 'taxableInterest' && (
+            <div className={styles.editActions} onClick={e => e.stopPropagation()}>
+              <button className={styles.saveBtn} onClick={() => commitEdit('taxableInterest')}>Save</button>
+              <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+            </div>
+          )}
+          {savedField === 'taxableInterest' && <span className={styles.recalcBadge}>1040 updated</span>}
+          {editedFields.has('taxableInterest') && savedField !== 'taxableInterest' && <span className={styles.editedBadge}>Edited</span>}
         </div>
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(2) Early withdrawal penalty</span>

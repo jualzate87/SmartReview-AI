@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Trowser from '@ids-ts/trowser'
 import '@ids-ts/trowser/dist/main.css'
 import { SteppedProgress, Step } from '@cgds/stepped-progress'
@@ -36,6 +37,7 @@ const PROGRESS_COMPLETED: Record<number, number[]> = {
 }
 
 export default function ImportPage() {
+  const navigate = useNavigate()
   const [trowserOpen, setTrowserOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
 
@@ -108,7 +110,13 @@ export default function ImportPage() {
                 )}
                 <button
                   className={footerStyles.customFooterNext}
-                  onClick={() => { if (currentStep < 4) setCurrentStep(s => s + 1) }}
+                  onClick={() => {
+                    if (currentStep === 4) {
+                      navigate('/import-hub')
+                    } else {
+                      setCurrentStep(s => s + 1)
+                    }
+                  }}
                 >
                   {currentStep === 4 ? 'Open return' : 'Next'}
                 </button>

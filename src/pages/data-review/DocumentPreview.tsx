@@ -10,21 +10,28 @@ interface FieldOverlay {
 
 // Overlay positions (%) for each 1040 field on each document image
 // Positions measured against the actual PNG dimensions
+// Overlay positions — measured via pixel-level border scan on each PNG
+// W-2: 2284×1540px  |  1099-INT: 1146×762px
+// W-2:  Box 1 cell x=1240–1725, Box 2 cell x=1725–2212, wages/withholding row y=68–188
+//        Box 12a row x=1240–2212, y=681–779
+// 1099-INT: value column x=542–942; row 1 y=55–197; EW row y=197–269
 const OVERLAYS: Record<DocType, Partial<Record<string, FieldOverlay>>> = {
   'w2': {
-    // Box 1 — Wages (feeds 1040 line 1a)
-    wages: { left: '55%', top: '12.5%', width: '20%', height: '7.48%' },
+    // Box 1  "1 Wages, tips / 60,000"        x=1240–1725, y=68–188
+    wages:       { left: '54.3%', top: '4.4%',  width: '21.2%', height: '7.8%' },
+    // Box 2  "2 Federal income tax / 10,000"  x=1725–2212, y=68–188
+    withholding: { left: '75.5%', top: '4.4%',  width: '21.3%', height: '7.8%' },
+    // Box 12a "D / 5000"  x=1240–2212, y=681–779 (full 12a row)
+    box12:       { left: '54.3%', top: '44.2%', width: '42.6%', height: '6.4%' },
   },
   '1099-int': {
-    // Box 1 — Interest income (feeds 1040 line 2b)
-    taxableInterest: { left: '47%', top: '27%', width: '19%', height: '5.5%' },
+    // Box 1  "1 Interest income / 3500"  x=542–942, y=55–197
+    taxableInterest: { left: '47.3%', top: '7.2%',  width: '34.9%', height: '18.6%' },
+    // Box 2  "2 Early withdrawal / 0"    x=542–942, y=197–269
+    earlyWithdrawal: { left: '47.3%', top: '25.9%', width: '34.9%', height:  '9.4%' },
   },
-  '1099-div': {
-    // Box 1a — Total ordinary dividends (feeds 1040 line 3b)
-    ordinaryDivs:  { left: '47%', top: '38%', width: '19%', height: '5%' },
-    // Box 1b — Qualified dividends (feeds 1040 line 3a)
-    qualifiedDivs: { left: '47%', top: '44%', width: '19%', height: '5%' },
-  },
+  // No 1099-DIV image yet — overlays suppressed to avoid mismatch
+  '1099-div': {},
   'k1': {},
 }
 
@@ -36,10 +43,10 @@ interface DocumentPreviewProps {
   docType?: DocType
 }
 
-const ZOOM_LEVELS = [50, 60, 65, 70, 75, 100, 125, 150, 200]
+const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
 
 export default function DocumentPreview({ imageSrc, alt, selectedField, highlightMode = 'blue', docType = 'w2' }: DocumentPreviewProps) {
-  const [zoomIndex, setZoomIndex] = useState(2) // default 65%
+  const [zoomIndex, setZoomIndex] = useState(5) // default 85%
   const zoom = ZOOM_LEVELS[zoomIndex]
 
   const zoomOut = () => setZoomIndex(i => Math.max(0, i - 1))

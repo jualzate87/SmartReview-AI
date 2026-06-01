@@ -1,5 +1,13 @@
 :root {
-  font-family: var(--font-family-body, "Avenir Next forINTUIT", Avenir, Helvetica, Arial, sans-serif);
+  /* Hardcoded fallback font variables — ensure Avenir loads even if ThemeProvider
+     CDN token fetch fails (e.g. on GitHub Pages without Intuit network access) */
+  --font-family-body: "Avenir Next forINTUIT", Avenir, sans-serif;
+  --font-name-body: "Avenir Next forINTUIT", Avenir, sans-serif;
+  --font-name-component: "Avenir Next forINTUIT", Avenir, sans-serif;
+  --font-name-heading: "Avenir Next forINTUIT", Avenir, sans-serif;
+  --font-name-display: "Avenir Next forINTUIT", Avenir, sans-serif;
+
+  font-family: "Avenir Next forINTUIT", Avenir, sans-serif;
   line-height: var(--line-height-body, 1.5);
   color: var(--color-text-primary, #393A3D);
   background-color: var(--color-page-background-primary, #FFFFFF);

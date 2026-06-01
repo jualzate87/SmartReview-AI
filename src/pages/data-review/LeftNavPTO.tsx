@@ -1,23 +1,8 @@
+import idsLogo from '../../assets/ids-logo.svg'
 import styles from '../../styles/data-review/LeftNavPTO.module.css'
 
-// Figma asset URLs — refreshed from design context
-const imgLogo         = "https://www.figma.com/api/mcp/asset/99c0671b-9475-4813-9437-7bde160aedfb"
-const imgWelcome      = "https://www.figma.com/api/mcp/asset/21b8bfc3-14b9-4d08-87f9-9913f290a42f"
-const imgTaxReturns   = "https://www.figma.com/api/mcp/asset/867ab1f7-95df-411c-8211-fc11ff5ec39d"
-const imgClients      = "https://www.figma.com/api/mcp/asset/945795fe-e92f-4635-8422-07da273cbcf0"
-const imgEFile        = "https://www.figma.com/api/mcp/asset/7b50d59e-7376-4ba8-9313-976ea269bb8b"
-const imgIntuitLink   = "https://www.figma.com/api/mcp/asset/04df3e29-7282-4a4e-a561-91409fd41f27"
-const imgLiveChat     = "https://www.figma.com/api/mcp/asset/da7ebd2a-72e5-4cae-aa08-f8aa54e47073"
-const imgFormStatus   = "https://www.figma.com/api/mcp/asset/efd78068-3ba8-494d-b41c-c79c7f3668c4"
-const imgTaxAdvisor   = "https://www.figma.com/api/mcp/asset/a373f7c0-d79c-4893-be7d-e2157cc15ff0"
-const imgPracticeMgmt = "https://www.figma.com/api/mcp/asset/10d5929a-fba7-42ec-abc3-c35ba03e6d5a"
-const imgQBAccountant = "https://www.figma.com/api/mcp/asset/c87d8d81-5e54-4249-a296-7b92c2b8f823"
-const imgIntegrations = "https://www.figma.com/api/mcp/asset/30262933-0bd4-4286-b90e-76c086e0a6ba"
-const imgPurchase     = "https://www.figma.com/api/mcp/asset/6ebd8b91-8be1-4ef6-a3b0-5402cc52177a"
-const imgCollapse     = "https://www.figma.com/api/mcp/asset/ab6cc1d0-708f-4d41-8349-ac646d697664"
-
 interface NavItemProps {
-  icon: string
+  icon: React.ReactNode
   active?: boolean
   label?: string
 }
@@ -26,7 +11,7 @@ function NavItem({ icon, active = false, label }: NavItemProps) {
   return (
     <div className={`${styles.navItem} ${active ? styles.navItemActive : ''}`} title={label}>
       {active && <div className={styles.activeBar} />}
-      <img src={icon} alt={label || ''} className={styles.navIcon} />
+      <span className={styles.navIconWrap}>{icon}</span>
     </div>
   )
 }
@@ -35,35 +20,100 @@ function Divider() {
   return <div className={styles.divider} />
 }
 
+const iconColor = '#b3c5d1'
+const iconActive = '#ffffff'
+
 export default function LeftNavPTO() {
   return (
     <div className={styles.nav}>
       {/* Logo */}
       <div className={styles.logo}>
-        <img src={imgLogo} alt="Intuit ProConnect" className={styles.logoImg} />
+        <img src={idsLogo} alt="Intuit ProConnect" className={styles.logoImg} />
       </div>
 
       {/* Nav links */}
       <div className={styles.navLinks}>
-        <NavItem icon={imgWelcome}    label="Welcome" />
-        <NavItem icon={imgTaxReturns} label="Tax returns" active />
-        <NavItem icon={imgClients}    label="Clients" />
-        <NavItem icon={imgEFile}      label="E-File Dashboard" />
-        <NavItem icon={imgIntuitLink} label="Intuit Link" />
+        {/* Welcome */}
+        <NavItem label="Welcome" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L3 8v9h5v-5h4v5h5V8L10 2z" stroke={iconColor} strokeWidth="1.4" strokeLinejoin="round"/>
+          </svg>
+        } />
+
+        {/* Tax Returns — active */}
+        <NavItem label="Tax Returns" active icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="3" y="2" width="14" height="16" rx="2" stroke={iconActive} strokeWidth="1.4"/>
+            <path d="M6 6h8M6 9.5h8M6 13h5" stroke={iconActive} strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+        } />
+
+        {/* Clients */}
+        <NavItem label="Clients" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="7" r="3" stroke={iconColor} strokeWidth="1.4"/>
+            <path d="M4 17c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round"/>
+          </svg>
+        } />
+
+        {/* E-File Dashboard */}
+        <NavItem label="E-File Dashboard" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="2" width="16" height="16" rx="2" stroke={iconColor} strokeWidth="1.4"/>
+            <path d="M5 10h10M5 7h6M5 13h8" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M14 12l2 2-2 2" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        } />
+
+        {/* Intuit Link */}
+        <NavItem label="Intuit Link" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M8 10a4 4 0 0 1 6 0" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M7 7.5A6 6 0 0 1 17 12.5" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round"/>
+            <path d="M5 5A9 9 0 0 1 18 14.5" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round"/>
+            <circle cx="5" cy="14" r="1.5" fill={iconColor}/>
+          </svg>
+        } />
 
         <Divider />
 
-        <NavItem icon={imgLiveChat}    label="Live Chat" />
-        <NavItem icon={imgFormStatus}  label="Form Status" />
-        <NavItem icon={imgTaxAdvisor}  label="Tax Advisor" />
-        <NavItem icon={imgPracticeMgmt} label="Practice Management" />
-        <NavItem icon={imgQBAccountant} label="QB Accountant" />
-        <NavItem icon={imgIntegrations} label="Integrations" />
+        {/* Tax Advisor */}
+        <NavItem label="Tax Advisor" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2l1.8 5.4H17l-4.5 3.3 1.7 5.3L10 13l-4.2 3 1.7-5.3L3 7.4h5.2L10 2z" stroke={iconColor} strokeWidth="1.4" strokeLinejoin="round"/>
+          </svg>
+        } />
+
+        {/* QB Accountant */}
+        <NavItem label="QB Accountant" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <circle cx="10" cy="10" r="8" stroke={iconColor} strokeWidth="1.4"/>
+            <path d="M7.5 7.5C7.5 6.12 8.62 5 10 5s2.5 1.12 2.5 2.5c0 1.38-1.12 2.5-2.5 2.5v2" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round"/>
+            <circle cx="10" cy="14.5" r="0.8" fill={iconColor}/>
+          </svg>
+        } />
+
+        {/* All Solutions */}
+        <NavItem label="All Solutions" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <rect x="2" y="2" width="7" height="7" rx="1.5" stroke={iconColor} strokeWidth="1.4"/>
+            <rect x="11" y="2" width="7" height="7" rx="1.5" stroke={iconColor} strokeWidth="1.4"/>
+            <rect x="2" y="11" width="7" height="7" rx="1.5" stroke={iconColor} strokeWidth="1.4"/>
+            <rect x="11" y="11" width="7" height="7" rx="1.5" stroke={iconColor} strokeWidth="1.4"/>
+          </svg>
+        } />
       </div>
 
       <Divider />
 
-      <NavItem icon={imgPurchase} label="Purchase" />
+      {/* Purchase */}
+      <NavItem label="Purchase" icon={
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 4h2l2.4 8.4a1 1 0 0 0 .96.7h6.8a1 1 0 0 0 .96-.73L17 8H6" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          <circle cx="8.5" cy="16" r="1.2" fill={iconColor}/>
+          <circle cx="15.5" cy="16" r="1.2" fill={iconColor}/>
+        </svg>
+      } />
 
       {/* Spacer */}
       <div className={styles.spacer} />
@@ -71,7 +121,12 @@ export default function LeftNavPTO() {
       {/* Bottom nav */}
       <div className={styles.bottomNav}>
         <Divider />
-        <NavItem icon={imgCollapse} label="Collapse" />
+        {/* Collapse */}
+        <NavItem label="Collapse" icon={
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M12 5l-5 5 5 5" stroke={iconColor} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        } />
       </div>
     </div>
   )

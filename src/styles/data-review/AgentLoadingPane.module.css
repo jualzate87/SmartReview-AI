@@ -185,7 +185,7 @@
 }
 
 .greetingTitle {
-  font-family: var(--font-name-body, 'AvenirNext forINTUIT', sans-serif);
+  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
   font-size: 24px;
   font-weight: 400;
   color: #21262a;
@@ -194,7 +194,7 @@
 }
 
 .greetingSubtext {
-  font-family: var(--font-name-body, 'AvenirNext forINTUIT', sans-serif);
+  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
   font-size: 14px;
   font-weight: 400;
   color: #6b6c72;

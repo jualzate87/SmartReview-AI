@@ -19,7 +19,7 @@ export default function SmartReturnHeader({ activeTab = 'smartreturn' }: SmartRe
 
       {/* ── Row 1: Product header 48px ── */}
       <div className={styles.row1}>
-        <span className={styles.businessName}>Johnson tax</span>
+        <span className={styles.businessName}>Honey Tax Accounting</span>
         <div className={styles.row1Right}>
           <button className={styles.navBtn}>
             <Question size="small" />
@@ -102,7 +102,7 @@ export default function SmartReturnHeader({ activeTab = 'smartreturn' }: SmartRe
             className={`${styles.tab} ${activeTab === 'smartreturn' ? styles.tabActive : ''}`}
             onClick={() => navigate('/smart-return')}
           >
-            <Rocket size="small" /> Launch return
+            <Rocket size="small" /> SmartReturn
           </button>
           <button className={styles.tab}>
             <Edit size="small" /> Input return

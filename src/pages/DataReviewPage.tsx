@@ -39,6 +39,16 @@ export default function DataReviewPage() {
   // W-2 wages — drives 1040 line 1a dynamically
   const [wages, setWages] = useState({ bingEquipment: 60000, techCircle: 64304 })
   const total1a = wages.bingEquipment + wages.techCircle
+  // Editable source-doc field values — drive downstream 1040 recalculation
+  const [fieldValues, setFieldValues] = useState({
+    withholding:     { bingEquipment: 10000, techCircle: 5987 },  // per-employer Box 2; sum → 1040 line 25a
+    box12:           5000,    // Tech Circle Box 12a 401(k)
+    taxableInterest: 4500,    // 1099-INT Box 1
+    qualifiedDivs:   20,      // 1099-DIV Box 1b
+  })
+  const totalWithholding = fieldValues.withholding.bingEquipment + fieldValues.withholding.techCircle
+  const updateField = (key: keyof typeof fieldValues, value: number | { bingEquipment: number; techCircle: number }) =>
+    setFieldValues(prev => ({ ...prev, [key]: value }))
   // Left panel width in px when idle (950px default); as % when agent open
   const [leftWidth, setLeftWidth] = useState(50)
   // Agent panel width in px when open (default 588px, user-resizable)
@@ -66,20 +76,42 @@ export default function DataReviewPage() {
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
   // Set of 1040 field names that have been marked as reviewed in the agent pane
   const [reviewedFields, setReviewedFields] = useState<Set<string>>(new Set())
+  // Field that the agent flagged as an issue — drives orange highlight mode
+  // Set when navigating to source docs from any issue detail pane
+  const [activeIssueField, setActiveIssueField] = useState<string | null>(null)
 
-  // issueField: active while agent is open on yoyDetail, OR while viewing source docs that came from yoyDetail
-  const issueField = (
-    (agentSubView === 'yoyDetail' && (agentView === 'report' || agentView === 'closing')) ||
-    (fromAgent && agentSubView === 'yoyDetail')
-  ) ? 'wages' : null
-  const highlightMode: 'orange' | 'blue' = (selectedField && selectedField === issueField) ? 'orange' : 'blue'
+  // Maps doc-overlay field keys → 1040 field keys (when they differ)
+  const DOC_FIELD_TO_1040: Record<string, string> = {
+    earlyWithdrawal: 'taxableInterest', // Box 2 flows to same 1040 line 2b
+  }
+
+  // issueField: the 1040 field currently flagged by the active agent issue
+  // — wages when in yoyDetail, or any field navigated to from an issue detail pane
+  const issueField = (() => {
+    // Navigated to source docs from an issue detail pane
+    if (fromAgent && activeIssueField) return DOC_FIELD_TO_1040[activeIssueField] ?? activeIssueField
+    // Agent is open and showing the YoY detail (wages issue)
+    if (agentSubView === 'yoyDetail' && (agentView === 'report' || agentView === 'closing')) return 'wages'
+    return null
+  })()
+  const highlightMode: 'orange' | 'blue' = (selectedField && (selectedField === issueField || DOC_FIELD_TO_1040[selectedField] === issueField)) ? 'orange' : 'blue'
 
   // Reset field selection on mount
   useEffect(() => {
     setSelectedField(null)
   }, [])
 
-  // Auto-open removed — agent panel is user-triggered via "Start guided review" button
+  // Auto-open agent panel when launched from SmartReturn via ?agent=true
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.split('?')[1] || '')
+    if (params.get('agent') === 'true') {
+      setAgentView('loading')
+      setTimeout(() => {
+        setAgentView('report')
+        sessionStorage.setItem('agentLoaded', '1')
+      }, 3200)
+    }
+  }, [])
 
   const handleAgentOpen = (subView?: 'overview' | 'yoyDetail') => {
     setSelectedField(null)
@@ -92,7 +124,7 @@ export default function DataReviewPage() {
       setTimeout(() => {
         setAgentView('report')
         sessionStorage.setItem('agentLoaded', '1')
-      }, 2200)
+      }, 3200)
     }
   }
 
@@ -294,10 +326,12 @@ export default function DataReviewPage() {
             yoyExpanded={yoyExpanded}
             reviewedFields={reviewedFields}
             issueField={issueField}
+            fieldValues={{ ...fieldValues, withholding: totalWithholding }}
             onViewSource={(fieldName) => {
               // Map field → document tab
               const tabMap: Record<string, typeof activeTopTab> = {
                 wages:           'w2s',
+                withholding:     'w2s',
                 taxableInterest: '1099-ints',
                 qualifiedDivs:   '1099-divs',
                 ordinaryDivs:    '1099-divs',
@@ -346,12 +380,12 @@ export default function DataReviewPage() {
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
               }}
             >
-              {/* Back to agent insights — shown when user navigated here from agent panel */}
-              {fromAgent && agentView === 'idle' && (
+              {/* Back to agent insights — shown whenever the right panel is visible */}
+              {agentView === 'idle' && rightPanelVisible && (
                 <div className={styles.agentBackLink}>
                   <button
                     className={styles.agentBackBtn}
-                    onClick={() => { setFromAgent(false); handleAgentOpen(agentSubView) }}
+                    onClick={() => { setFromAgent(false); setActiveIssueField(null); handleAgentOpen(agentSubView) }}
                   >
                     <ChevronLeft size="small" /> Back to agent insights
                   </button>
@@ -364,6 +398,7 @@ export default function DataReviewPage() {
                   // Manual tab switch clears issue context so orange doesn't bleed across tabs
                   setFromAgent(false)
                   setSelectedField(null)
+                  setActiveIssueField(null)
                 }}
                 onPopOut={() => {
                   setPoppedOut(true)
@@ -429,10 +464,20 @@ export default function DataReviewPage() {
                   onSubTabChange={(tab) => setActiveSubTab(tab as 'bingEquipment' | 'techCircle')}
                   wages={wages}
                   onWageChange={(employer, value) => setWages(prev => ({ ...prev, [employer]: value }))}
+                  fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
+                  onFieldValueChange={(key, value) => {
+                    if (key === 'withholding' && typeof value === 'number') {
+                      updateField('withholding', { ...fieldValues.withholding, [activeSubTab]: value })
+                    } else {
+                      updateField(key as keyof typeof fieldValues, value as number)
+                    }
+                  }}
+                  onMarkReviewed={handleMarkReviewed}
+                  reviewedFields={reviewedFields}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
+              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
               {activeTopTab === 'k1' && <DetailFieldsK1 />}
             </div>
 
@@ -477,9 +522,40 @@ export default function DataReviewPage() {
                         // Only update if explicitly provided and different
                         if (fromSubView) setAgentSubView(fromSubView)
                         setFromAgent(true)
+                        setActiveIssueField('wages')
+                        setSelectedField('wages')
                         // Preserve wages selection so highlight carries through to document panel
                         handleAgentClose(true)
                         setActiveTopTab('w2s')
+                      }}
+                      onNavigateToTab={(tab, subTab, field) => {
+                        // Navigate to the source document, optionally highlighting a specific field
+                        setActiveTopTab(tab)
+                        if (subTab) setActiveSubTab(subTab)
+                        if (field) {
+                          setSelectedField(field)
+                          setActiveIssueField(field)
+                        } else {
+                          setSelectedField(null)
+                          setActiveIssueField(null)
+                        }
+                        setFromAgent(true)
+                        handleAgentClose(true)
+                      }}
+                      onHighlightField={(field) => {
+                        // Highlight the 1040 field without leaving the agent panel
+                        setSelectedField(field)
+                        setActiveIssueField(field)
+                      }}
+                      fieldValues={{ ...fieldValues, withholding: totalWithholding }}
+                      onFieldValueChange={(key, value) => {
+                        if (key === 'withholding' && typeof value === 'number') {
+                          // Distribute evenly when edited from agent pane (no per-employer context)
+                          // For now keep existing split proportional
+                          updateField('withholding', { bingEquipment: fieldValues.withholding.bingEquipment, techCircle: value - fieldValues.withholding.bingEquipment })
+                        } else {
+                          updateField(key as keyof typeof fieldValues, value as number)
+                        }
                       }}
                     />
                   }

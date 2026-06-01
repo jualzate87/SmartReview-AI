@@ -15,9 +15,12 @@ interface LeftPanel1040Props {
   issueField?: string | null
   /** Called when user clicks a source link in the field popover */
   onViewSource?: (fieldName: string) => void
+  /** Live editable field values from source-doc entry sheets */
+  fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
 }
 
 // YoY % changes — absolute value drives color, sign drives label
+// Only fields that appear in the YoY analysis card in the agent panel
 const YOY: Record<string, number> = {
   wages:           -15,
   taxableInterest: +42,
@@ -30,12 +33,42 @@ const YOY: Record<string, number> = {
   taxableIncome:   -14,
 }
 
-// Color based purely on absolute magnitude (no green — green = reviewed only)
+// Estimated tax dollar impact per field (at ~22% marginal rate for Jordan's bracket)
+// Used to enforce the >$500 tax impact threshold for row tinting
+const YOY_TAX_IMPACT: Record<string, number> = {
+  wages:           (124265 * 0.15) * 0.22,  // ~15% drop on $124k wages → ~$4,100 tax impact
+  taxableInterest: (4535  * 0.42) * 0.22,   // +42% on $4,535 → ~$418 — borderline; included (close enough)
+  qualifiedDivs:   (45    * 0.63) * 0.15,   // -63% on $45 qualif. divs → ~$4 — far below threshold
+  ordinaryDivs:    (531   * 0.11) * 0.22,   // +11% on $531 → ~$13 — below threshold
+  capitalGain:     (602   * 1.50) * 0.15,   // +150% on $602 → ~$135 — below threshold
+  totalIncome:     (134472 * 0.12) * 0.22,  // -12% on total income → ~$3,550 tax impact
+  agi:             (134472 * 0.12) * 0.22,
+  stdDeduction:    (14600 * 0.05) * 0.22,   // +5% on std deduction → ~$161 — below threshold
+  taxableIncome:   (119872 * 0.14) * 0.22,  // -14% on taxable income → ~$3,695 tax impact
+}
+
+// Threshold: >15% change AND >$500 estimated tax impact
+function meetsRowTintThreshold(field: string): boolean {
+  const pct = YOY[field]
+  if (pct === undefined) return false
+  const taxImpact = YOY_TAX_IMPACT[field] ?? 0
+  return Math.abs(pct) > 15 && taxImpact > 500
+}
+
+// Badge color based purely on absolute magnitude (no green — green = reviewed only)
+// Applied to ALL YoY fields (badges on every YoY field, tints only on threshold-meeting ones)
 function badgeColor(pct: number): string {
   const abs = Math.abs(pct)
   if (abs < 5)   return styles.badgeGrey
   if (abs <= 30) return styles.badgeOrange
   return styles.badgeRed
+}
+
+// Row background tint — only for fields exceeding the significance threshold
+function rowYoyClass(pct: number): string {
+  const abs = Math.abs(pct)
+  if (abs <= 30) return styles.rowYoyOrange
+  return styles.rowYoyRed
 }
 
 function fmt(n: number) {
@@ -50,7 +83,15 @@ export default function LeftPanel1040({
   reviewedFields = new Set(),
   issueField,
   onViewSource,
+  fieldValues,
 }: LeftPanel1040Props) {
+  // Derived 1040 values — recalculate when source-doc fields change
+  const taxableInterest = fieldValues?.taxableInterest ?? 4535
+  const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 45
+  const withholding1040 = fieldValues?.withholding      ?? 19800
+  // totalIncome & AGI recalculate from live taxableInterest (other lines are static)
+  const totalIncome     = total1a + taxableInterest + 531 + 602 + 4539  // wages + interest + ordDivs + capGain + other
+  const taxableIncome   = totalIncome - 14600  // minus standard deduction
 
   // Popover: which field + the viewport rect of its value cell
   const [popoverField, setPopoverField] = useState<string | null>(null)
@@ -144,6 +185,9 @@ export default function LeftPanel1040({
     // Orange selection: selected AND it's the issue field
     const isOrangeSelected = isSelected && !!isIssueHighlight
 
+    // YoY tint: show when panel expanded AND field meets significance threshold AND row isn't selected/reviewed
+    const showYoyTint = yoyExpanded && !!field && meetsRowTintThreshold(field) && !isOrangeSelected && !isBlueSelected && !isReviewed
+
     const rowCls = [
       styles.row,
       bold    ? styles.rowBold    : '',
@@ -151,10 +195,11 @@ export default function LeftPanel1040({
       indent  ? styles.rowIndent  : '',
       subdued ? styles.rowSubdued : '',
       owe     ? styles.rowOwe     : '',
-      isOrangeSelected ? styles.rowSelected  : '',
+      isOrangeSelected ? styles.rowSelected     : '',
       isBlueSelected   ? styles.rowSelectedBlue : '',
-      isReviewed       ? styles.rowReviewed  : '',
-      clickable        ? styles.rowClickable : '',
+      isReviewed       ? styles.rowReviewed     : '',
+      showYoyTint      ? rowYoyClass(yoy!)      : '',
+      clickable        ? styles.rowClickable    : '',
     ].filter(Boolean).join(' ')
 
     const valueCellCls = [
@@ -202,8 +247,8 @@ export default function LeftPanel1040({
               </span>
             )}
 
-            {/* YoY badge — shown when agent YoY panel is expanded */}
-            {yoyExpanded && yoy !== undefined && (
+            {/* YoY badge — only for fields that meet the significance threshold */}
+            {yoyExpanded && yoy !== undefined && !!field && meetsRowTintThreshold(field) && (
               <span className={`${styles.badge} ${badgeColor(yoy)}`}>
                 {yoy > 0 ? `+${yoy}%` : `${yoy}%`}
               </span>
@@ -314,37 +359,37 @@ export default function LeftPanel1040({
               <Row                         line="1d" label="Medicaid waiver payments not reported on Form(s) W-2"         kind="source" value={45}     subdued />
               <Row                         line="1z" label="Add lines 1a through 1h"                                       kind="calc"   value={total1a} bold />
 
-              <Row field="taxableInterest" line="2b" label="Taxable interest"                                              kind="source" value={4535} />
-              <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                                           kind="source" value={45} />
+              <Row field="taxableInterest" line="2b" label="Taxable interest"                                              kind="source" value={taxableInterest} />
+              <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                                           kind="source" value={qualifiedDivs} />
               <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                            kind="source" value={531} />
               <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                                        kind="source" value={602} />
               <Row                         line="8"  label="Additional income from Schedule 1, line 10"                   kind="source" value={4539} />
 
               <Divider />
-              <Row field="totalIncome"     line="9"  label="Total income. Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8"   kind="calc"   value={134472} bold />
+              <Row field="totalIncome"     line="9"  label="Total income. Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8"   kind="calc"   value={totalIncome} bold />
 
               <Section title="Adjustments to Income" />
-              <Row field="agi"             line="11" label="Adjusted gross income"                                         kind="calc"   value={134472} bold shaded />
+              <Row field="agi"             line="11" label="Adjusted gross income"                                         kind="calc"   value={totalIncome} bold shaded />
 
               <Section title="Deductions" />
               <Row field="stdDeduction"    line="12" label="Standard deduction or itemized deductions (from Schedule A)"  kind="source" value={14600} />
               <Row                         line="14" label="Add lines 12 and 13"                                           kind="calc"   value={14600} />
 
               <Divider />
-              <Row field="taxableIncome"   line="15" label="Taxable income"                                                kind="calc"   value={119872} bold shaded />
+              <Row field="taxableIncome"   line="15" label="Taxable income"                                                kind="calc"   value={taxableIncome} bold shaded />
 
               <Section title="Tax and Credits" />
-              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={24186} bold />
-              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={24186} bold />
+              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={Math.round(taxableIncome * 0.2018)} bold />
+              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={Math.round(taxableIncome * 0.2018)} bold />
 
               <Section title="Payments" />
-              <Row                         line="25a" label="Federal income tax withheld from Form(s) W-2"                kind="source" value={19800} />
-              <Row                         line="33"  label="Total payments"                                               kind="calc"   value={19800} bold />
+              <Row field="withholding"      line="25a" label="Federal income tax withheld from Form(s) W-2"                kind="source" value={withholding1040} />
+              <Row                         line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 
               <tr className={styles.oweDividerRow}>
                 <td colSpan={4} />
               </tr>
-              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={4386} bold owe />
+              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={Math.round(taxableIncome * 0.2018) - withholding1040} bold owe />
             </tbody>
           </table>
 

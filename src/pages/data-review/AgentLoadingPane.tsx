@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactNode } from 'react'
-import { CommentPencil, Close } from '@design-systems/icons'
+import { Close } from '@design-systems/icons'
 import intuitAssistIcon from '../../assets/icons/intuit-assist.svg'
 import loadingGif from '../../assets/intuit-assist-loading.gif'
 import styles from '../../styles/data-review/AgentLoadingPane.module.css'
@@ -33,7 +33,7 @@ export default function AgentLoadingPane({ onClose, showReport = false, closing 
   useEffect(() => {
     if (showReport) return // already showing report, don't run timers
     const greetTimer = setTimeout(() => setPhase('greeting'),  800)
-    const exitTimer  = setTimeout(() => setPhase('exiting'),  1800)
+    const exitTimer  = setTimeout(() => setPhase('exiting'),  2800)
     return () => { clearTimeout(greetTimer); clearTimeout(exitTimer) }
   }, [showReport])
 
@@ -42,19 +42,12 @@ export default function AgentLoadingPane({ onClose, showReport = false, closing 
 
       {/* ── Header — always static, never re-animates ── */}
       <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <button className={styles.iconBtn} aria-label="Menu">
-            <MenuIcon />
-          </button>
-        </div>
+        <div className={styles.headerLeft} />
         <div className={styles.headerTitle}>
           <img src={intuitAssistIcon} alt="" className={styles.assistIcon} />
-          <span className={styles.titleText}>Tax Prep Agent</span>
+          <span className={styles.titleText}>Review AI</span>
         </div>
         <div className={styles.headerRight}>
-          <button className={styles.iconBtn} aria-label="New chat">
-            <CommentPencil size="small" />
-          </button>
           <button className={styles.iconBtn} aria-label="Close" onClick={onClose}>
             <Close size="small" />
           </button>
@@ -70,7 +63,7 @@ export default function AgentLoadingPane({ onClose, showReport = false, closing 
             {/* Phase A: GIF only */}
             {phase === 'gif-only' && (
               <div className={styles.gifOnlyPhase}>
-                <img src={loadingGif} alt="Tax Prep Agent is analyzing your return" className={styles.logo} />
+                <img src={loadingGif} alt="Review AI is analyzing your return" className={styles.logo} />
               </div>
             )}
 

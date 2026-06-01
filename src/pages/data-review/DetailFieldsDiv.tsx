@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react'
-import { Refresh } from '@design-systems/icons'
+import { useEffect, useRef, useState } from 'react'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
 // 1099-DIV — Citigroup Global Markets (Citi Forms 1099 for 2024, Page 2 of 5)
@@ -42,16 +41,45 @@ const FORM_DATA = {
 interface DetailFieldsDivProps {
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
+  onFieldSelect?: (field: string) => void
+  fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
+  onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
+  onMarkReviewed?: (field: string) => void
+  reviewedFields?: Set<string>
 }
 
-export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue' }: DetailFieldsDivProps) {
+export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields }: DetailFieldsDivProps) {
   const highlightedRef = useRef<HTMLDivElement>(null)
+  const [editingField, setEditingField] = useState<string | null>(null)
+  const [draftValue, setDraftValue] = useState('')
+  const [savedField, setSavedField] = useState<string | null>(null)
+  const [editedFields, setEditedFields] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (selectedField && highlightedRef.current) {
       highlightedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
     }
   }, [selectedField])
+
+  const [originalValue, setOriginalValue] = useState('')
+
+  const startEdit = (field: string, currentValue: string) => {
+    const clean = currentValue.replace(/,/g, '')
+    setEditingField(field)
+    setDraftValue(clean)
+    setOriginalValue(clean)
+  }
+
+  const commitEdit = (field: 'qualifiedDivs') => {
+    const num = parseFloat(draftValue.replace(/,/g, '')) || 0
+    onFieldValueChange?.(field, num)
+    setEditingField(null)
+    setEditedFields(prev => new Set(prev).add(field))
+    setSavedField(field)
+    setTimeout(() => setSavedField(null), 3500)
+  }
+
+  const cancelEdit = () => { setEditingField(null); setDraftValue(''); setOriginalValue('') }
 
   return (
     <div className={styles.container}>
@@ -70,7 +98,6 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue' 
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(a) Payer's federal ID number (EIN)</span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={PAYER_DATA.ein} />
-          <button className={styles.refreshBtn} aria-label="Refresh"><Refresh size="medium" /></button>
         </div>
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(b) Payer's name</span>
@@ -123,6 +150,8 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue' 
         <div
           ref={selectedField === 'ordinaryDivs' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${selectedField === 'ordinaryDivs' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+          onClick={() => onFieldSelect?.('ordinaryDivs')}
+          style={{ cursor: 'pointer' }}
         >
           <span className={styles.fieldLabel}>(1a) Total ordinary dividends</span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${selectedField === 'ordinaryDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`} readOnly value={FORM_DATA.box1a_totalOrdinary} />
@@ -130,9 +159,36 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue' 
         <div
           ref={selectedField === 'qualifiedDivs' ? highlightedRef : undefined}
           className={`${styles.fieldRow} ${selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldRowHighlightedOrange : styles.fieldRowHighlighted) : ''}`}
+          onClick={() => onFieldSelect?.('qualifiedDivs')}
+          style={{ cursor: 'pointer' }}
         >
           <span className={styles.fieldLabel}>(1b) Qualified dividends</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`} readOnly value={FORM_DATA.box1b_qualifiedDivs} />
+          <input
+            className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'qualifiedDivs' ? styles.fieldInputEditing : selectedField === 'qualifiedDivs' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
+            readOnly={editingField !== 'qualifiedDivs'}
+            value={editingField === 'qualifiedDivs' ? draftValue : (fieldValues?.qualifiedDivs !== undefined ? fieldValues.qualifiedDivs.toLocaleString() : FORM_DATA.box1b_qualifiedDivs)}
+            onChange={e => setDraftValue(e.target.value)}
+            autoFocus={editingField === 'qualifiedDivs'}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitEdit('qualifiedDivs') } if (e.key === 'Escape') cancelEdit() }}
+            onClick={e => e.stopPropagation()}
+          />
+          {selectedField === 'qualifiedDivs' && editingField !== 'qualifiedDivs' && !reviewedFields?.has('qualifiedDivs') && (
+            <>
+              <button className={styles.editBtn} onClick={e => { e.stopPropagation(); startEdit('qualifiedDivs', fieldValues?.qualifiedDivs?.toString() ?? FORM_DATA.box1b_qualifiedDivs) }}>Edit</button>
+              <button className={styles.markCorrectBtn} onClick={e => { e.stopPropagation(); onMarkReviewed?.('qualifiedDivs'); onFieldSelect?.('qualifiedDivs') }}>Mark as correct</button>
+            </>
+          )}
+          {selectedField === 'qualifiedDivs' && editingField !== 'qualifiedDivs' && reviewedFields?.has('qualifiedDivs') && (
+            <span className={styles.reviewedBadge}>✓ Reviewed</span>
+          )}
+          {editingField === 'qualifiedDivs' && (
+            <div className={styles.editActions} onClick={e => e.stopPropagation()}>
+              <button className={styles.saveBtn} onClick={() => commitEdit('qualifiedDivs')}>Save</button>
+              <button className={styles.undoBtn} onClick={cancelEdit}>Undo</button>
+            </div>
+          )}
+          {savedField === 'qualifiedDivs' && <span className={styles.recalcBadge}>1040 updated</span>}
+          {editedFields.has('qualifiedDivs') && savedField !== 'qualifiedDivs' && <span className={styles.editedBadge}>Edited</span>}
         </div>
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(2a) Total capital gain distributions</span>

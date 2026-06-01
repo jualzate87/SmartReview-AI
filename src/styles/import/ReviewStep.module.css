@@ -211,7 +211,7 @@
 }
 
 .fieldInput:focus {
-  border-color: #0077c5;
+  border-color: #205ea3;
 }
 
 /* Default field width for Name, SSN */
@@ -305,7 +305,7 @@
   font-weight: 600;
   line-height: 24px;
   color: #ffffff;
-  background: #0077c5;
+  background: #205ea3;
   border: none;
   border-radius: 4px;
   padding: 8px 24px;
