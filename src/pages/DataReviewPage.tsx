@@ -25,6 +25,7 @@ import AgentLoadingPane from './data-review/AgentLoadingPane'
 import w2BingEquipment from '../assets/w2-bing-equipment.png'
 import w2TechCircle from '../assets/w2-tech-circle.png'
 import img1099Int from '../assets/1099-int-megabank.png'
+import img1099Div from '../assets/1099-div-citigroup.png'
 import imgK1 from '../assets/k1-easy-money.png'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
@@ -76,6 +77,17 @@ export default function DataReviewPage() {
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
   // Set of 1040 field names that have been marked as reviewed in the agent pane
   const [reviewedFields, setReviewedFields] = useState<Set<string>>(new Set())
+  // Set of 1040 field names manually checked off by the preparer (independent of AI review)
+  const [checkedFields, setCheckedFields] = useState<Set<string>>(new Set())
+
+  const handleToggleChecked = (fieldName: string) => {
+    setCheckedFields(prev => {
+      const next = new Set(prev)
+      if (next.has(fieldName)) next.delete(fieldName)
+      else next.add(fieldName)
+      return next
+    })
+  }
   // Field that the agent flagged as an issue — drives orange highlight mode
   // Set when navigating to source docs from any issue detail pane
   const [activeIssueField, setActiveIssueField] = useState<string | null>(null)
@@ -86,10 +98,12 @@ export default function DataReviewPage() {
   }
 
   // issueField: the 1040 field currently flagged by the active agent issue
-  // — wages when in yoyDetail, or any field navigated to from an issue detail pane
+  // — set whenever an issue detail pane is open (in agent panel or after navigating away)
   const issueField = (() => {
-    // Navigated to source docs from an issue detail pane
-    if (fromAgent && activeIssueField) return DOC_FIELD_TO_1040[activeIssueField] ?? activeIssueField
+    // Agent panel open and an issue was highlighted via onHighlightField
+    if (activeIssueField && (agentView === 'report' || agentView === 'closing' || fromAgent)) {
+      return DOC_FIELD_TO_1040[activeIssueField] ?? activeIssueField
+    }
     // Agent is open and showing the YoY detail (wages issue)
     if (agentSubView === 'yoyDetail' && (agentView === 'report' || agentView === 'closing')) return 'wages'
     return null
@@ -131,7 +145,10 @@ export default function DataReviewPage() {
   const handleAgentClose = (preserveSelection = false) => {
     setAgentView('closing')
     setYoyExpanded(false)
-    if (!preserveSelection) setSelectedField(null)
+    if (!preserveSelection) {
+      setSelectedField(null)
+      setActiveIssueField(null)
+    }
     // Step 1: agent plays panelSlideOut (350ms)
     // Step 2: switch to idle (display:flex appears on right panel)
     // Step 3: one rAF later, add the enter animation class (browser has painted display:flex)
@@ -274,11 +291,7 @@ export default function DataReviewPage() {
           <span className={styles.headerTitle}>Data Review - Form 1040</span>
         </div>
         <div className={styles.headerRight}>
-          {agentView === 'idle' && (
-            <Button priority="primary" onClick={() => handleAgentOpen()}>
-              Start guided review
-            </Button>
-          )}
+
           <button
             className={`${styles.intuitIntelBtn} ${rightPanelVisible && agentView === 'idle' ? styles.intuitIntelBtnActive : ''}`}
             aria-label="Toggle panel"
@@ -323,11 +336,13 @@ export default function DataReviewPage() {
             onFieldClick={setSelectedField}
             total1a={total1a}
             wages={wages}
-            yoyExpanded={yoyExpanded}
+            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail'}
             reviewedFields={reviewedFields}
+            checkedFields={checkedFields}
+            onToggleChecked={handleToggleChecked}
             issueField={issueField}
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
-            onViewSource={(fieldName) => {
+            onViewSource={(fieldName, sourceLabel) => {
               // Map field → document tab
               const tabMap: Record<string, typeof activeTopTab> = {
                 wages:           'w2s',
@@ -340,6 +355,13 @@ export default function DataReviewPage() {
               }
               const tab = tabMap[fieldName] ?? 'w2s'
               setActiveTopTab(tab)
+
+              // Navigate to the correct W-2 sub-tab based on source label
+              if (tab === 'w2s' && sourceLabel) {
+                const lc = sourceLabel.toLowerCase()
+                if (lc.includes('tech circle')) setActiveSubTab('techCircle')
+                else if (lc.includes('bing')) setActiveSubTab('bingEquipment')
+              }
 
               if (agentView !== 'idle') {
                 // Agent is open — close it preserving the field selection
@@ -423,7 +445,7 @@ export default function DataReviewPage() {
                 <DocumentPreview
                   imageSrc={
                     activeTopTab === '1099-ints' ? img1099Int :
-                    activeTopTab === '1099-divs' ? img1099Int :
+                    activeTopTab === '1099-divs' ? img1099Div :
                     activeTopTab === 'k1' ? imgK1 :
                     activeSubTab === 'techCircle' ? w2TechCircle : w2BingEquipment
                   }

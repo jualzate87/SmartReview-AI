@@ -444,11 +444,11 @@
   line-height: 1.4;
 }
 
-.badgeGrey   { background: #8a9ba5; }
+.badgeGrey   { background: #a08c6e; }
 .badgeOrange { background: #E5A14E; }
 .badgeRed    { background: #b3261e; }
 
-/* ── Reviewed state ── */
+/* ── Reviewed state (AI review) ── */
 .reviewedIcon {
   display: inline-flex;
   color: #1a8254;
@@ -460,4 +460,51 @@
 .valueBoxReviewed {
   border-color: #1a8254 !important;
   background: #f0faf4 !important;
+}
+
+/* ── Manually checked state (preparer verified) ── */
+/* Slightly different green to distinguish from AI-reviewed */
+.rowChecked {
+  box-shadow: inset 3px 0 0 #0f766e;
+}
+
+.valueBoxChecked {
+  border-color: #0f766e !important;
+  background: #f0fdfa !important;
+}
+
+.valueNumChecked {
+  color: #0f766e;
+}
+
+.checkedIcon {
+  display: inline-flex;
+  color: #0f766e;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ── Hover check button ── */
+.checkBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: #b0b7bf;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 100ms ease;
+  border-radius: 3px;
+}
+
+.checkBtn:hover {
+  color: #0f766e;
+}
+
+/* Active state — shown when field is already checked (to allow uncheck) */
+.checkBtnActive {
+  color: #0f766e;
 }

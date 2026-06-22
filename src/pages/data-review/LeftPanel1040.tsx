@@ -11,10 +11,14 @@ interface LeftPanel1040Props {
   /** When true: clicking a field shows YoY badge, not blue popover */
   yoyExpanded?: boolean
   reviewedFields?: Set<string>
+  /** Fields manually checked off by the preparer (independent of AI review) */
+  checkedFields?: Set<string>
+  /** Toggle a field's checked state */
+  onToggleChecked?: (fieldName: string) => void
   /** When true: this field is highlighted orange (active agent issue card) — takes precedence over blue */
   issueField?: string | null
   /** Called when user clicks a source link in the field popover */
-  onViewSource?: (fieldName: string) => void
+  onViewSource?: (fieldName: string, sourceLabel?: string) => void
   /** Live editable field values from source-doc entry sheets */
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
 }
@@ -47,20 +51,20 @@ const YOY_TAX_IMPACT: Record<string, number> = {
   taxableIncome:   (119872 * 0.14) * 0.22,  // -14% on taxable income → ~$3,695 tax impact
 }
 
-// Threshold: >15% change AND >$500 estimated tax impact
+// Threshold: >=15% change AND >$300 estimated tax impact
 function meetsRowTintThreshold(field: string): boolean {
   const pct = YOY[field]
   if (pct === undefined) return false
   const taxImpact = YOY_TAX_IMPACT[field] ?? 0
-  return Math.abs(pct) > 15 && taxImpact > 500
+  return Math.abs(pct) >= 15 && taxImpact > 300
 }
 
 // Badge color based purely on absolute magnitude (no green — green = reviewed only)
 // Applied to ALL YoY fields (badges on every YoY field, tints only on threshold-meeting ones)
 function badgeColor(pct: number): string {
   const abs = Math.abs(pct)
-  if (abs < 5)   return styles.badgeGrey
-  if (abs <= 30) return styles.badgeOrange
+  if (abs <= 10)  return styles.badgeGrey
+  if (abs <= 30)  return styles.badgeOrange
   return styles.badgeRed
 }
 
@@ -81,6 +85,8 @@ export default function LeftPanel1040({
   total1a = 124265,
   yoyExpanded = false,
   reviewedFields = new Set(),
+  checkedFields = new Set(),
+  onToggleChecked,
   issueField,
   onViewSource,
   fieldValues,
@@ -96,6 +102,8 @@ export default function LeftPanel1040({
   // Popover: which field + the viewport rect of its value cell
   const [popoverField, setPopoverField] = useState<string | null>(null)
   const [popoverRect, setPopoverRect]   = useState<DOMRect | null>(null)
+  // Which field row is hovered (for showing the check button)
+  const [hoveredField, setHoveredField] = useState<string | null>(null)
 
   const handleRowClick = (field: string, e: React.MouseEvent<HTMLTableRowElement>) => {
     // If the field is the active issue field, just toggle selection (orange mode)
@@ -176,17 +184,21 @@ export default function LeftPanel1040({
     const isIssueHighlight = !!field && field === issueField
     const isSelected       = !!field && selectedField === field
     const isReviewed       = !!field && reviewedFields.has(field)
+    const isChecked        = !!field && checkedFields.has(field)
+    const isHovered        = !!field && hoveredField === field
     const isPopoverOpen    = !!field && popoverField === field
     const yoy              = field ? YOY[field] : undefined
     const clickable        = !!field
+    // Show check button on hover for any field with a value (kind set means it has data)
+    const showCheckBtn     = !!field && !!kind && !!value && isHovered
 
     // Blue selection: selected but NOT the active issue field
     const isBlueSelected   = isSelected && !isIssueHighlight
     // Orange selection: selected AND it's the issue field
     const isOrangeSelected = isSelected && !!isIssueHighlight
 
-    // YoY tint: show when panel expanded AND field meets significance threshold AND row isn't selected/reviewed
-    const showYoyTint = yoyExpanded && !!field && meetsRowTintThreshold(field) && !isOrangeSelected && !isBlueSelected && !isReviewed
+    // YoY tint: only when row is selected/hovered via issue interaction (orange mode)
+    const showYoyTint = isOrangeSelected
 
     const rowCls = [
       styles.row,
@@ -198,6 +210,7 @@ export default function LeftPanel1040({
       isOrangeSelected ? styles.rowSelected     : '',
       isBlueSelected   ? styles.rowSelectedBlue : '',
       isReviewed       ? styles.rowReviewed     : '',
+      isChecked && !isReviewed ? styles.rowChecked : '',
       showYoyTint      ? rowYoyClass(yoy!)      : '',
       clickable        ? styles.rowClickable    : '',
     ].filter(Boolean).join(' ')
@@ -210,6 +223,7 @@ export default function LeftPanel1040({
       isOrangeSelected    ? styles.valueBoxSelected : '',
       isBlueSelected      ? styles.valueBoxSelectedBlue : '',
       isReviewed && !isSelected ? styles.valueBoxReviewed : '',
+      isChecked && !isReviewed && !isSelected ? styles.valueBoxChecked : '',
     ].filter(Boolean).join(' ')
 
     const valueNumCls = [
@@ -219,12 +233,15 @@ export default function LeftPanel1040({
       isOrangeSelected  ? styles.valueNumSelected   : '',
       isBlueSelected    ? styles.valueNumSelectedBlue : '',
       isReviewed && !isSelected ? styles.valueNumReviewed : '',
+      isChecked && !isReviewed && !isSelected ? styles.valueNumChecked : '',
     ].filter(Boolean).join(' ')
 
     return (
       <tr
         className={rowCls}
         onClick={clickable ? (e) => handleRowClick(field!, e) : undefined}
+        onMouseEnter={field ? () => setHoveredField(field) : undefined}
+        onMouseLeave={field ? () => setHoveredField(null) : undefined}
       >
         <td className={styles.cellLine}>{line}</td>
         <td className={styles.cellLabel}>
@@ -235,9 +252,36 @@ export default function LeftPanel1040({
         <td className={styles.cellLineRight}>{line}</td>
         <td className={styles.cellValue}>
           <div className={valueCellCls}>
-            {/* Reviewed check icon — left side of value box */}
+            {/* Reviewed check icon (AI review) — left side of value box */}
             {isReviewed && (
               <span className={styles.reviewedIcon}><CircleCheck size="small" /></span>
+            )}
+
+            {/* Manual check icon (preparer verified) */}
+            {isChecked && !isReviewed && (
+              <span className={styles.checkedIcon}><CircleCheck size="small" /></span>
+            )}
+
+            {/* Hover check button — appears on hover for checkable fields */}
+            {showCheckBtn && !isChecked && !isReviewed && (
+              <button
+                className={styles.checkBtn}
+                aria-label={`Mark ${field} as verified`}
+                onClick={(e) => { e.stopPropagation(); onToggleChecked?.(field!) }}
+              >
+                <CircleCheck size="small" />
+              </button>
+            )}
+
+            {/* Uncheck button — visible when checked, on hover */}
+            {showCheckBtn && isChecked && !isReviewed && (
+              <button
+                className={`${styles.checkBtn} ${styles.checkBtnActive}`}
+                aria-label={`Unmark ${field} as verified`}
+                onClick={(e) => { e.stopPropagation(); onToggleChecked?.(field!) }}
+              >
+                <CircleCheck size="small" />
+              </button>
             )}
 
             {/* The value number */}
@@ -247,8 +291,8 @@ export default function LeftPanel1040({
               </span>
             )}
 
-            {/* YoY badge — only for fields that meet the significance threshold */}
-            {yoyExpanded && yoy !== undefined && !!field && meetsRowTintThreshold(field) && (
+            {/* YoY badge — show on all fields with YoY data */}
+            {yoyExpanded && yoy !== undefined && !!field && (
               <span className={`${styles.badge} ${badgeColor(yoy)}`}>
                 {yoy > 0 ? `+${yoy}%` : `${yoy}%`}
               </span>
@@ -402,10 +446,10 @@ export default function LeftPanel1040({
           fieldName={popoverField}
           anchorRect={popoverRect}
           onClose={handleClosePopover}
-          onViewSource={(fieldName) => {
+          onViewSource={(fieldName, sourceLabel) => {
             // Dismiss the popover UI but keep the field selected so highlight carries through
             handleDismissPopoverKeepSelection()
-            onViewSource?.(fieldName)
+            onViewSource?.(fieldName, sourceLabel)
           }}
         />
       )}
