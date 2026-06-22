@@ -45,10 +45,10 @@ interface AgentReportPaneProps {
 }
 
 const REPORT_CARDS = [
-  { label: 'YoY analysis',          badgeCount: 2, badgeColor: 'red'  as const, position: 'first' },
-  { label: 'Scan quality & inputs', badgeCount: 1, badgeColor: 'red'  as const, position: 'middle' },
-  { label: 'IRS Compliance',        badgeCount: 1, badgeColor: 'red'  as const, position: 'middle' },
-  { label: 'Credits & deductions',  badgeCount: 2, badgeColor: 'blue' as const, position: 'last' },
+  { label: 'YoY analysis',          keys: ['wages', 'taxableInterest'],          badgeColor: 'red'  as const, position: 'first' },
+  { label: 'Scan quality & inputs', keys: ['scanQuality'],                        badgeColor: 'red'  as const, position: 'middle' },
+  { label: 'IRS compliance',        keys: ['irsCompliance'],                      badgeColor: 'red'  as const, position: 'middle' },
+  { label: 'Credits & deductions',  keys: ['qualifiedDivs', 'earlyWithdrawal'],  badgeColor: 'blue' as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -75,7 +75,7 @@ const TAXABLE_INTEREST_ISSUE = {
   suggestedActions: [
     'Confirm the $4,500 Box 1 amount against the MegaBank 1099-INT source document.',
     'Ask Jordan whether a new savings account or CD was opened in 2024 to explain the increase.',
-    'Verify no additional 1099-INT documents are missing from the import.',
+    'Confirm no additional 1099-INT documents are missing from the import.',
   ],
   viewSourceLabel: 'View 1099-INT',
   viewSourceTab: '1099-ints' as const,
@@ -124,7 +124,7 @@ const IRS_COMPLIANCE_ISSUE = {
   ],
   tableHeaders: ['Source', 'Withheld', 'Safe harbor target', 'Confidence'],
   suggestedActions: [
-    'Verify both W-2 Box 2 amounts against the source documents.',
+    'Confirm both W-2 Box 2 amounts against the source documents.',
     'Calculate Jordan\'s estimated 2024 tax liability to confirm whether withholding meets the 90% safe harbor.',
     'If withholding is insufficient, advise Jordan about Form 2210 and potential penalty.',
   ],
@@ -150,7 +150,7 @@ const CREDITS_ITEMS = [
     tableHeaders: ['Field', 'Value', 'Notes', 'Confidence'],
     suggestedActions: [
       'Confirm the qualified dividend amount ($20.10) against the Citigroup 1099-DIV Box 1b.',
-      'Verify Jordan held the underlying shares for more than 60 days (required for qualified treatment).',
+      'Confirm Jordan held the underlying shares for more than 60 days (required for qualified treatment).',
       'No tax change expected — document the review.',
     ],
     viewSourceLabel: 'View 1099-DIV',
@@ -211,6 +211,8 @@ export default function AgentReportPane({
 }: AgentReportPaneProps) {
   const reviewedCount = reviewedFields.size
   const progressPct = Math.round((reviewedCount / TOTAL_REVIEW_ITEMS) * 100)
+  const allReviewed = reviewedCount >= TOTAL_REVIEW_ITEMS
+  const [showCompletion, setShowCompletion] = useState(false)
   const [inputValue, setInputValue] = useState('')
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
   const [importedDocsExpanded, setImportedDocsExpanded] = useState(false)
@@ -221,6 +223,9 @@ export default function AgentReportPane({
 
   // ── Detail pane navigation ─────────────────────────────────
   const openDetail = (key: string) => {
+    // Highlight the corresponding 1040 field when opening any issue detail
+    const field = ISSUE_FIELD[key as IssueKey] ?? null
+    onHighlightField?.(field)
     if (key === 'wages') {
       setYoyDetailOpen(true)
       onSubViewChange?.('yoyDetail')
@@ -232,11 +237,13 @@ export default function AgentReportPane({
   const handleCloseYoyDetail = () => {
     setYoyDetailClosing(true)
     onSubViewChange?.('overview')
+    onHighlightField?.(null)  // clear 1040 highlight when closing
     setTimeout(() => { setYoyDetailOpen(false); setYoyDetailClosing(false) }, 200)
   }
 
   const handleCloseIssueDetail = () => {
     setIssueDetailClosing(true)
+    onHighlightField?.(null)  // clear 1040 highlight when closing
     setTimeout(() => { setIssueDetailOpen(null); setIssueDetailClosing(false) }, 200)
   }
 
@@ -253,9 +260,10 @@ export default function AgentReportPane({
         setTimeout(() => openDetail(nextKey), 220)
       }
     } else {
-      // All done — close detail and return to overview
+      // All done — close detail and show completion screen if all reviewed
       if (currentKey === 'wages') handleCloseYoyDetail()
       else handleCloseIssueDetail()
+      setTimeout(() => setShowCompletion(true), 220)
     }
   }
 
@@ -317,7 +325,7 @@ export default function AgentReportPane({
         <div className={styles.chat}>
 
           <p className={styles.agentMessage}>
-            Here's a summary of imported documents and issues found.
+            Here's what we found. Review the issues below to complete your return.
           </p>
 
           {/* Imported Documents card */}
@@ -330,7 +338,7 @@ export default function AgentReportPane({
               <img src={importedDocsIcon} alt="" width={20} height={20} />
               <div className={styles.importedDocsContent}>
                 <span className={styles.importedDocsLabel}>Imported documents</span>
-                <Badge status="info" shape="rect">4</Badge>
+                <Badge status="info" shape="rect">5</Badge>
               </div>
               <ChevronDown size="small" className={importedDocsExpanded ? styles.chevronUp : styles.chevron} />
             </button>
@@ -341,7 +349,7 @@ export default function AgentReportPane({
                   <span className={styles.docColDocument}>Document</span>
                   <span className={styles.docColConfidence}>
                     Confidence
-                    <span className={styles.docConfidenceInfo} title="OCR scan confidence score">ⓘ</span>
+                    <span className={styles.docConfidenceInfo} title="Scan confidence score">ⓘ</span>
                   </span>
                 </div>
                 <button className={styles.docRow} onClick={() => onNavigateToTab?.('w2s', 'bingEquipment')}>
@@ -384,26 +392,38 @@ export default function AgentReportPane({
                   </div>
                   <span className={styles.confidenceBadge} data-level="high">94%</span>
                 </button>
+                <div className={styles.docRow} style={{ cursor: 'default' }}>
+                  <div className={styles.docRowLeft}>
+                    <div className={styles.docFileIcon} style={{ color: '#205ea3' }}><Document size="medium" /></div>
+                    <div className={styles.docMeta}>
+                      <span className={styles.docName}>Client-Questionnaire.pdf</span>
+                      <span className={styles.docSub}>Organizer · 4 responses</span>
+                    </div>
+                  </div>
+                  <span className={styles.confidenceBadge} data-level="high">100%</span>
+                </div>
               </div>
             )}
           </div>
 
           {/* Items to review scorecard */}
           <div className={styles.scoreCard}>
-            <div className={styles.scoreTopRow}>
-              <span className={styles.scoreTitle}>Items to review</span>
-              <span className={styles.scoreRemaining}>
-                <strong>{TOTAL_REVIEW_ITEMS - reviewedCount}</strong> of {TOTAL_REVIEW_ITEMS} remaining
-              </span>
-            </div>
+            <span className={styles.scoreTitle}>Items to review</span>
             <div className={styles.progressTrack}>
               <div className={styles.progressFill} style={{ width: `${progressPct || 5}%`, background: '#00856d', transition: 'width 400ms ease' }} />
+            </div>
+            <div className={styles.scoreCountRow}>
+              <span className={styles.scoreCountNumber}>{TOTAL_REVIEW_ITEMS - reviewedCount}</span>
+              <span className={styles.scoreCountLabel}>items remaining</span>
             </div>
           </div>
 
           {/* Expandable report card bundle */}
           <div className={styles.cardBundle}>
-            {REPORT_CARDS.map((card, i) => (
+            {REPORT_CARDS.map((card, i) => {
+              const remaining = card.keys.filter(k => !reviewedFields.has(k)).length
+              const cardDone = remaining === 0
+              return (
               <div key={card.label}>
                 <button
                   className={`${styles.card} ${styles[`card_${card.position}`]} ${expandedCard === card.label ? styles.cardActive : ''}`}
@@ -412,9 +432,10 @@ export default function AgentReportPane({
                   <div className={styles.cardIcon}>{CARD_ICONS[i]}</div>
                   <div className={styles.cardContent}>
                     <span className={styles.cardLabel}>{card.label}</span>
-                    <span className={`${styles.badge} ${card.badgeColor === 'red' ? styles.badgeRed : styles.badgeBlue}`}>
-                      {card.badgeCount}
-                    </span>
+                    {cardDone
+                      ? <span className={`${styles.badge} ${styles.badgeGreen}`}>✓</span>
+                      : <span className={`${styles.badge} ${card.badgeColor === 'red' ? styles.badgeRed : styles.badgeBlue}`}>{remaining}</span>
+                    }
                   </div>
                   <ChevronDown size="small" className={`${styles.chevron} ${expandedCard === card.label ? styles.chevronUp : ''}`} />
                 </button>
@@ -434,6 +455,7 @@ export default function AgentReportPane({
                         <div className={styles.findingTitleRow}>
                           {wagesReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
                           <span className={styles.findingTitle}>Significant income drop</span>
+                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('wages') + 1} of {GUIDED_ORDER.length}</span>
                           {wagesReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
                         <p className={styles.findingBody}>
@@ -445,8 +467,8 @@ export default function AgentReportPane({
                               <Panel size="small" /> View sources
                             </Button>
                           </Tooltip>
-                          <Tooltip text="See root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail('wages')}>More info <ChevronRight size="small" /></Button>
+                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
+                            <Button priority="primary" size="small" onClick={() => openDetail('wages')}>See details <ChevronRight size="small" /></Button>
                           </Tooltip>
                         </div>
                       </button>
@@ -456,10 +478,11 @@ export default function AgentReportPane({
                         <div className={styles.findingTitleRow}>
                           {intReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
                           <span className={styles.findingTitle}>Taxable interest up 42% year-over-year</span>
+                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('taxableInterest') + 1} of {GUIDED_ORDER.length}</span>
                           {intReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
                         <p className={styles.findingBody}>
-                          MegaBank 1099-INT shows $4,535 interest income — a +42% jump vs. prior year ($3,194).
+                          MegaBank 1099-INT shows $4,535 in interest income — a 42% jump vs. prior year ($3,194).
                         </p>
                         <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
                           <Tooltip text="Open the MegaBank 1099-INT to verify Box 1 interest income">
@@ -467,8 +490,8 @@ export default function AgentReportPane({
                               <Panel size="small" /> View source
                             </Button>
                           </Tooltip>
-                          <Tooltip text="See root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail('taxableInterest')}>More info <ChevronRight size="small" /></Button>
+                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
+                            <Button priority="primary" size="small" onClick={() => openDetail('taxableInterest')}>See details <ChevronRight size="small" /></Button>
                           </Tooltip>
                         </div>
                       </button>
@@ -485,6 +508,7 @@ export default function AgentReportPane({
                         <div className={styles.findingTitleRow}>
                           {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
                           <span className={styles.findingTitle}>Unreadable field — Tech Circle W-2</span>
+                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('scanQuality') + 1} of {GUIDED_ORDER.length}</span>
                           {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
                         <p className={styles.findingBody}>
@@ -496,8 +520,8 @@ export default function AgentReportPane({
                               <Panel size="small" /> View source
                             </Button>
                           </Tooltip>
-                          <Tooltip text="See root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail(SCAN_QUALITY_ISSUE.issueKey)}>More info <ChevronRight size="small" /></Button>
+                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
+                            <Button priority="primary" size="small" onClick={() => openDetail(SCAN_QUALITY_ISSUE.issueKey)}>See details <ChevronRight size="small" /></Button>
                           </Tooltip>
                         </div>
                       </button>
@@ -506,7 +530,7 @@ export default function AgentReportPane({
                 })()}
 
                 {/* ── IRS Compliance — underpayment risk ── */}
-                {card.label === 'IRS Compliance' && expandedCard === 'IRS Compliance' && (() => {
+                {card.label === 'IRS compliance' && expandedCard === 'IRS compliance' && (() => {
                   const isReviewed = reviewedFields.has(IRS_COMPLIANCE_ISSUE.issueKey)
                   return (
                     <div className={styles.findingCard}>
@@ -514,6 +538,7 @@ export default function AgentReportPane({
                         <div className={styles.findingTitleRow}>
                           {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
                           <span className={styles.findingTitle}>Possible underpayment penalty</span>
+                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('irsCompliance') + 1} of {GUIDED_ORDER.length}</span>
                           {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
                         <p className={styles.findingBody}>
@@ -525,8 +550,8 @@ export default function AgentReportPane({
                               <Panel size="small" /> View source
                             </Button>
                           </Tooltip>
-                          <Tooltip text="See root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail(IRS_COMPLIANCE_ISSUE.issueKey)}>More info <ChevronRight size="small" /></Button>
+                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
+                            <Button priority="primary" size="small" onClick={() => openDetail(IRS_COMPLIANCE_ISSUE.issueKey)}>See details <ChevronRight size="small" /></Button>
                           </Tooltip>
                         </div>
                       </button>
@@ -547,6 +572,7 @@ export default function AgentReportPane({
                               : <span className={styles.findingDot} style={{ background: '#205ea3' }} />
                             }
                             <span className={styles.findingTitle}>{item.title}</span>
+                            <span className={styles.issueChip}>{GUIDED_ORDER.indexOf(item.issueKey as IssueKey) + 1} of {GUIDED_ORDER.length}</span>
                             {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                           </div>
                           <p className={styles.findingBody}>
@@ -564,8 +590,8 @@ export default function AgentReportPane({
                                 <Panel size="small" /> View source
                               </Button>
                             </Tooltip>
-                            <Tooltip text="See root cause, tax impact, and suggested next steps for this finding">
-                              <Button priority="primary" size="small" onClick={() => openDetail(item.issueKey)}>More info <ChevronRight size="small" /></Button>
+                            <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
+                              <Button priority="primary" size="small" onClick={() => openDetail(item.issueKey)}>See details <ChevronRight size="small" /></Button>
                             </Tooltip>
                           </div>
                         </button>
@@ -574,13 +600,20 @@ export default function AgentReportPane({
                   </div>
                 )}
               </div>
-            ))}
+            )})}
           </div>
 
-          {/* Start guided review */}
-          <div className={styles.guidedReviewRow}>
-            <Button priority="primary" onClick={() => openDetail('wages')}>Start guided review <ChevronRight size="small" /></Button>
-          </div>
+          {/* Completion screen — shown when all items reviewed */}
+          {allReviewed && showCompletion && (
+            <div className={styles.completionScreen}>
+              <span className={styles.completionIcon}>✓</span>
+              <p className={styles.completionTitle}>Review complete</p>
+              <p className={styles.completionBody}>All {TOTAL_REVIEW_ITEMS} items reviewed. You're ready to continue.</p>
+              <button className={styles.completionBackBtn} onClick={() => setShowCompletion(false)}>
+                Back to overview
+              </button>
+            </div>
+          )}
 
         </div>
       </div>
@@ -628,6 +661,7 @@ export default function AgentReportPane({
           total1a={total1a}
           wages={wages}
           issueNumber={GUIDED_ORDER.indexOf('wages') + 1}
+          totalIssues={GUIDED_ORDER.length}
           onPrev={isFirstIssue('wages') ? undefined : () => handlePrev('wages')}
           onNext={isLastIssue('wages') ? undefined : () => handleNext('wages')}
         />
@@ -669,6 +703,7 @@ export default function AgentReportPane({
             }}
             onMarkReviewed={onMarkReviewed}
             issueNumber={GUIDED_ORDER.indexOf(activeIssue.issueKey as IssueKey) + 1}
+            totalIssues={GUIDED_ORDER.length}
             onPrev={isFirstIssue(activeIssue.issueKey) ? undefined : () => handlePrev(activeIssue.issueKey)}
             onNext={isLastIssue(activeIssue.issueKey) ? undefined : () => handleNext(activeIssue.issueKey)}
           />

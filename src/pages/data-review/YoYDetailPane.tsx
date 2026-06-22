@@ -20,6 +20,7 @@ interface YoYDetailPaneProps {
   issueNumber?: number
   onPrev?: () => void
   onNext?: () => void
+  totalIssues?: number
 }
 
 const TABLE_ROWS = [
@@ -31,7 +32,14 @@ const TABLE_ROWS = [
 // The 1040 field this finding maps to
 const FINDING_FIELD = 'wages'
 
-export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields, issueNumber, onPrev, onNext }: YoYDetailPaneProps) {
+// Client Q&A for the wages/income drop finding
+const WAGES_QA = {
+  question: 'Your W-2 wages dropped by about $21k compared to last year. Can you explain the change in income?',
+  answer: 'Yes — I left Bing Equipment in June 2024, so I only worked there for half the year. My Tech Circle salary stayed the same. The drop makes sense.',
+  date: 'Mar 15, 2025',
+}
+
+export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields, issueNumber, onPrev, onNext, totalIssues = 6 }: YoYDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   // Derive reviewed state from parent set so it survives remounts
   const isReviewed = reviewedFields?.has(FINDING_FIELD) ?? false
@@ -73,6 +81,21 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             </div>
           </div>
 
+          {/* Issue navigation bar */}
+          {(onPrev !== undefined || onNext !== undefined || issueNumber != null) && (
+            <div className={styles.issueNavBar}>
+              <button className={styles.issueNavBtn} onClick={onPrev} disabled={!onPrev} aria-label="Previous issue">
+                <ChevronLeft size="small" /> Previous issue
+              </button>
+              {issueNumber != null && (
+                <span className={styles.issueNavCounter}>Issue {issueNumber} of {totalIssues}</span>
+              )}
+              <button className={styles.issueNavBtn} onClick={onNext} disabled={!onNext} aria-label="Next issue">
+                Next issue <ChevronRight size="small" />
+              </button>
+            </div>
+          )}
+
           {/* Title row */}
           <div className={styles.titleRow}>
             <span className={styles.dot} />
@@ -96,10 +119,27 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
 
           {/* Root Cause */}
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Root Cause</p>
+            <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>
               Bing W-2 shows $22k reduction with low scan confidence (72%).
             </p>
+          </div>
+
+          {/* Client response */}
+          <div className={styles.section}>
+            <p className={styles.sectionTitle}>Client response</p>
+            <div className={styles.qaBlock}>
+              <p className={styles.qaQuestion}>
+                <strong>Preparer asked:</strong> {WAGES_QA.question}
+              </p>
+              <div className={styles.qaBubble}>
+                <span className={styles.qaAvatar}>JW</span>
+                <div className={styles.qaText}>
+                  <span className={styles.qaName}>Jordan Wells · {WAGES_QA.date}</span>
+                  <p className={styles.qaAnswer}>{WAGES_QA.answer}</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Details table */}
@@ -127,9 +167,9 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
 
           {/* Suggested Action */}
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Suggested Action</p>
+            <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
-              <li>Verify the W2 Bing wages amount ($60,000) against the source document. The scan confidence is low (72%).</li>
+              <li>Confirm the Bing Equipment wages amount ($60,000) against the source document. Scan confidence is low (72%).</li>
               <li>Confirm with the client whether the income reduction is expected.</li>
             </ul>
           </div>
@@ -149,21 +189,11 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 </button>
               </Tooltip>
             ) : (
-              <Tooltip text="Confirm you've checked this finding — it will be tracked in your review progress">
+              <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
                 <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
                   <CircleCheck size="small" /> Mark as reviewed
                 </Button>
               </Tooltip>
-            )}
-            {(onPrev || onNext) && (
-              <div className={styles.navArrowRow}>
-                <button className={styles.navIconBtn} aria-label="Previous issue" onClick={onPrev} disabled={!onPrev}>
-                  <ChevronLeft size="small" />
-                </button>
-                <button className={styles.navIconBtn} aria-label="Next issue" onClick={onNext} disabled={!onNext}>
-                  <ChevronRight size="small" />
-                </button>
-              </div>
             )}
           </div>
 
@@ -201,7 +231,7 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             </div>
           </div>
         </div>
-        <span className={styles.legal}>Important information about how we use generative AI</span>
+        <span className={styles.legal}>How we use generative AI</span>
       </div>
 
     </div>

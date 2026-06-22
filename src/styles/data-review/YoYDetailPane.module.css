@@ -53,7 +53,7 @@
 .assistIcon { width: 20px; height: 20px; flex-shrink: 0; }
 
 .titleText {
-  font-family: var(--font-name-component, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-bold, 600);
   line-height: 1.3;
@@ -117,7 +117,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
@@ -126,7 +126,7 @@
 .backLink:hover { text-decoration: underline; }
 
 .counter {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -151,7 +151,57 @@
   max-width: 220px;
 }
 
-/* Prev / Next icon buttons — live in the title row, flanking the issue title */
+/* ── Issue navigation bar — labeled prev/next buttons ── */
+.issueNavBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 0;
+  border-top: 1px solid #e3e5e8;
+  border-bottom: 1px solid #e3e5e8;
+}
+
+.issueNavBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  height: 44px;
+  border: 1px solid #d4d7dc;
+  border-radius: 6px;
+  background: #ffffff;
+  font-family: Arial, sans-serif !important;
+  font-size: 13px;
+  font-weight: 600;
+  color: #393a3d;
+  cursor: pointer;
+  transition: background 100ms ease, border-color 100ms ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.issueNavBtn:hover {
+  background: #f4f5f8;
+  border-color: #b0b7bf;
+}
+.issueNavBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.issueNavCounter {
+  font-family: Arial, sans-serif !important;
+  font-size: 12px;
+  font-weight: 400;
+  color: #5d686f;
+  white-space: nowrap;
+  text-align: center;
+  flex: 1;
+}
+
+/* Keep old icon buttons defined for any legacy usage */
 .navIconBtn {
   display: flex;
   align-items: center;
@@ -176,6 +226,78 @@
   pointer-events: none;
 }
 
+/* ── Client Q&A section ── */
+.qaBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.qaQuestion {
+  font-family: Arial, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text\/secondary, #5d686f);
+  margin: 0;
+}
+
+.qaQuestion strong {
+  font-weight: 600;
+  color: #21262a;
+}
+
+.qaBubble {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #f4f5f8;
+  border-radius: 0 8px 8px 8px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.qaAvatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #205ea3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif !important;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffffff;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.qaText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.qaName {
+  font-family: Arial, sans-serif !important;
+  font-size: 11px;
+  font-weight: 600;
+  color: #5d686f;
+  line-height: 1.3;
+}
+
+.qaAnswer {
+  font-family: Arial, sans-serif !important;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #21262a;
+  margin: 0;
+}
+
 /* ── Issue title row ── */
 .titleRow {
   display: flex;
@@ -192,7 +314,7 @@
 }
 
 .issueTitle {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -207,7 +329,7 @@
 
 /* ── Summary text ── */
 .summary {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 15px;
   font-weight: 400;
   line-height: 21px;
@@ -225,7 +347,7 @@
 }
 
 .taxImpactText {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 15px;
   font-weight: 400;
   line-height: 21px;
@@ -246,7 +368,7 @@
 }
 
 .sectionTitle {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 15px;
   font-weight: 600;
   line-height: 21px;
@@ -255,7 +377,7 @@
 }
 
 .sectionBody {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 15px;
   font-weight: 400;
   line-height: 21px;
@@ -296,7 +418,7 @@
 }
 
 .cellLabel {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;
@@ -305,7 +427,7 @@
 }
 
 .cellValue {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -319,7 +441,7 @@
 
 /* ── Suggested action list ── */
 .actionList {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 15px;
   font-weight: 400;
   line-height: 21px;
@@ -364,7 +486,7 @@
 }
 
 .miniProgressLabel {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 400;
   line-height: 16px;
@@ -400,7 +522,7 @@
   border-radius: 4px;
   background: #e6f6ef;
   color: #1a8254;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
@@ -454,7 +576,7 @@
   border: none;
   outline: none;
   resize: none;
-  font-family: var(--font-name-component, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component, 400);
   line-height: 1.3;
@@ -505,7 +627,7 @@
 .sendIcon { width: 20px; height: 20px; }
 
 .legal {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: var(--font-size-body-4, 12px);
   line-height: 1.5;
   color: var(--color-link-text, #0365ac);

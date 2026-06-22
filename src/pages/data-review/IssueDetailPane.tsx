@@ -33,6 +33,31 @@ interface IssueDetailPaneProps {
   onMarkReviewed?: (fieldName: string) => void
   onPrev?: () => void
   onNext?: () => void
+  totalIssues?: number
+}
+
+// Mock client Q&A keyed by issueKey
+const CLIENT_QA: Record<string, { question: string; answer: string; date: string }> = {
+  scanQuality: {
+    question: 'We noticed a discrepancy in your W-2 from Bing Equipment. Can you confirm the Box 1 wages amount?',
+    answer: 'Yes, that looks right — I left Bing Equipment in June 2024. The $60,000 reflects about half a year of salary.',
+    date: 'Mar 15, 2025',
+  },
+  irsCompliance: {
+    question: 'Did you receive any IRS notices or correspondence in 2024 related to prior-year returns?',
+    answer: 'No, nothing from the IRS. Everything was clean last year.',
+    date: 'Mar 15, 2025',
+  },
+  qualifiedDivs: {
+    question: 'Your qualified dividends dropped significantly vs. last year. Did you sell or transfer any investment accounts in 2024?',
+    answer: 'Yes, I moved some funds out of my Citigroup brokerage account in early 2024 to cover a home repair.',
+    date: 'Mar 16, 2025',
+  },
+  earlyWithdrawal: {
+    question: 'We see an early withdrawal from a retirement account. Can you confirm the amount and whether the 10% penalty applies?',
+    answer: 'Yes, I pulled $8,500 from my IRA in August. I was told the penalty might be waived because it was for a medical expense, but I\'m not sure.',
+    date: 'Mar 16, 2025',
+  },
 }
 
 export default function IssueDetailPane({
@@ -60,6 +85,7 @@ export default function IssueDetailPane({
   onMarkReviewed,
   onPrev,
   onNext,
+  totalIssues = 6,
 }: IssueDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   const isReviewed = reviewedFields?.has(issueKey) ?? false
@@ -124,6 +150,21 @@ export default function IssueDetailPane({
             </div>
           </div>
 
+          {/* Issue navigation bar */}
+          {(onPrev !== undefined || onNext !== undefined || issueNumber != null) && (
+            <div className={styles.issueNavBar}>
+              <button className={styles.issueNavBtn} onClick={onPrev} disabled={!onPrev} aria-label="Previous issue">
+                <ChevronLeft size="small" /> Previous issue
+              </button>
+              {issueNumber != null && (
+                <span className={styles.issueNavCounter}>Issue {issueNumber} of {totalIssues}</span>
+              )}
+              <button className={styles.issueNavBtn} onClick={onNext} disabled={!onNext} aria-label="Next issue">
+                Next issue <ChevronRight size="small" />
+              </button>
+            </div>
+          )}
+
           {/* Title row */}
           <div className={styles.titleRow}>
             <span className={styles.dot} style={dotStyle} />
@@ -147,9 +188,28 @@ export default function IssueDetailPane({
 
           {/* Root Cause */}
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Root Cause</p>
+            <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>{rootCause}</p>
           </div>
+
+          {/* Client response — shown when a matching Q&A exists */}
+          {CLIENT_QA[issueKey] && (
+            <div className={styles.section}>
+              <p className={styles.sectionTitle}>Client response</p>
+              <div className={styles.qaBlock}>
+                <p className={styles.qaQuestion}>
+                  <strong>Preparer asked:</strong> {CLIENT_QA[issueKey].question}
+                </p>
+                <div className={styles.qaBubble}>
+                  <span className={styles.qaAvatar}>JW</span>
+                  <div className={styles.qaText}>
+                    <span className={styles.qaName}>Jordan Wells · {CLIENT_QA[issueKey].date}</span>
+                    <p className={styles.qaAnswer}>{CLIENT_QA[issueKey].answer}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Details table */}
           <div className={styles.section}>
@@ -179,7 +239,7 @@ export default function IssueDetailPane({
 
           {/* Suggested Action */}
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Suggested Action</p>
+            <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
               {suggestedActions.map((action, i) => (
                 <li key={i}>{action}</li>
@@ -230,21 +290,11 @@ export default function IssueDetailPane({
                 </button>
               </Tooltip>
             ) : (
-              <Tooltip text="Confirm you've checked this finding — it will be tracked in your review progress">
+              <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
                 <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
                   <CircleCheck size="small" /> Mark as reviewed
                 </Button>
               </Tooltip>
-            )}
-            {(onPrev || onNext) && (
-              <div className={styles.navArrowRow}>
-                <button className={styles.navIconBtn} aria-label="Previous issue" onClick={onPrev} disabled={!onPrev}>
-                  <ChevronLeft size="small" />
-                </button>
-                <button className={styles.navIconBtn} aria-label="Next issue" onClick={onNext} disabled={!onNext}>
-                  <ChevronRight size="small" />
-                </button>
-              </div>
             )}
           </div>
 
@@ -282,7 +332,7 @@ export default function IssueDetailPane({
             </div>
           </div>
         </div>
-        <span className={styles.legal}>Important information about how we use generative AI</span>
+        <span className={styles.legal}>How we use generative AI</span>
       </div>
 
     </div>
