@@ -451,25 +451,18 @@ export default function AgentReportPane({
           {/* Completion screen — shown when all items reviewed (replaces cards) */}
           {allReviewed && showCompletion && (
             <div className={styles.completionScreen}>
-              <div className={styles.completionIconWrap}>
-                <CircleCheck size="large" />
+              <div className={styles.completionHeader}>
+                <span className={styles.completionCheckIcon}><CircleCheck size="small" /></span>
+                <span className={styles.completionTitle}>Review complete</span>
               </div>
-              <p className={styles.completionTitle}>Review complete</p>
               <p className={styles.completionBody}>
                 All {TOTAL_REVIEW_ITEMS} issues reviewed and reconciled. This return is ready to move forward.
               </p>
-              <div className={styles.completionSignOff}>
-                <span className={styles.completionSignOffLabel}>Signed off by</span>
-                <div className={styles.completionSignOffRow}>
-                  {[...reviewedFields.values()].slice(0, 1).map((v, idx) => (
-                    <span key={idx} style={{ display: 'contents' }}>
-                      <span className={styles.completionAvatar}>{v.by.split(' ').map((n: string) => n[0]).join('')}</span>
-                      <span className={styles.completionByName}>{v.by}</span>
-                      <span className={styles.completionAt}>· {v.at}</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
+              {[...reviewedFields.values()].slice(0, 1).map((v, idx) => (
+                <p key={idx} className={styles.completionSignOff}>
+                  Signed off by <strong>{v.by}</strong> · {v.at}
+                </p>
+              ))}
               <div className={styles.completionActions}>
                 <Button priority="primary" size="medium" onClick={() => {}}>
                   Complete return review

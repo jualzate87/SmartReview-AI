@@ -635,110 +635,60 @@
 .completionScreen {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 28px 20px 24px;
-  text-align: center;
-  background: linear-gradient(180deg, #f0faf5 0%, #ffffff 60%);
-  border-radius: 12px;
-  border: 1px solid #c6ead9;
-  margin: 8px 0;
+  gap: 10px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid #c3ced5;
+  border-radius: 4px;
+  margin: 0;
 }
 
-.completionIconWrap {
+.completionHeader {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #e6f6ef;
+  gap: 8px;
   color: #1a8254;
+}
+
+.completionCheckIcon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .completionTitle {
   font-family: Arial, sans-serif !important;
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.3;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
   color: #21262a;
   margin: 0;
 }
 
 .completionBody {
   font-family: Arial, sans-serif !important;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 1.5;
-  color: #5d686f;
+  line-height: 20px;
+  color: #393a3d;
   margin: 0;
-  max-width: 280px;
 }
 
-/* Sign-off attribution inside completion screen */
 .completionSignOff {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  padding: 10px 16px;
-  background: #ffffff;
-  border: 1px solid #e3e5e8;
-  border-radius: 8px;
-  width: 100%;
-}
-
-.completionSignOffLabel {
-  font-family: Arial, sans-serif !important;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #8a9299;
-}
-
-.completionSignOffRow {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.completionAvatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: #205ea3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: Arial, sans-serif !important;
-  font-size: 9px;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.completionByName {
-  font-family: Arial, sans-serif !important;
-  font-size: 13px;
-  font-weight: 600;
-  color: #21262a;
-}
-
-.completionAt {
   font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 400;
   color: #8a9299;
+  margin: 0;
 }
 
 .completionActions {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   width: 100%;
+  padding-top: 4px;
 }
 
 .completionSecondaryBtn {
@@ -750,7 +700,7 @@
   font-weight: 500;
   color: #5d686f;
   text-decoration: underline;
-  padding: 4px;
+  padding: 0;
 }
 .completionSecondaryBtn:hover { color: #21262a; }
 
