@@ -18,7 +18,7 @@ interface DetailFieldsProps {
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: FieldValuesKey, value: number) => void
   onMarkReviewed?: (field: string) => void
-  reviewedFields?: Set<string>
+  reviewedFields?: Map<string, { by: string; at: string }>
 }
 
 // Static non-wages fields per employer

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Close, Plus, ChevronDown, ChevronRight, ChevronLeft, CircleCheck, Document, Panel } from '@design-systems/icons'
 import importedDocsIcon from '../../assets/icons/imported-docs.svg'
 import { Button } from '@ids-ts/button'
@@ -30,7 +30,7 @@ interface AgentReportPaneProps {
   onViewW2?: (fromSubView?: 'overview' | 'yoyDetail') => void
   onReviewSource?: () => void
   onMarkReviewed?: (fieldName: string) => void
-  reviewedFields?: Set<string>
+  reviewedFields?: Map<string, { by: string; at: string }>
   closing?: boolean
   initialSubView?: 'overview' | 'yoyDetail'
   onSubViewChange?: (subView: 'overview' | 'yoyDetail') => void
@@ -204,7 +204,7 @@ export default function AgentReportPane({
   onViewW2,
   onReviewSource,
   onMarkReviewed,
-  reviewedFields = new Set(),
+  reviewedFields = new Map(),
   closing = false,
   initialSubView,
   onSubViewChange,
@@ -220,6 +220,21 @@ export default function AgentReportPane({
   const progressPct = Math.round((reviewedCount / TOTAL_REVIEW_ITEMS) * 100)
   const allReviewed = reviewedCount >= TOTAL_REVIEW_ITEMS
   const [showCompletion, setShowCompletion] = useState(false)
+  const prevAllReviewed = useRef(false)
+
+  // Auto-trigger completion screen the moment all items become reviewed
+  useEffect(() => {
+    if (allReviewed && !prevAllReviewed.current) {
+      // Brief delay so the "Reviewed" button state renders first
+      const t = setTimeout(() => {
+        setYoyDetailOpen(false)
+        setIssueDetailOpen(null)
+        setShowCompletion(true)
+      }, 600)
+      return () => clearTimeout(t)
+    }
+    prevAllReviewed.current = allReviewed
+  }, [allReviewed])
   const [inputValue, setInputValue] = useState('')
   const [expandedCard, setExpandedCard] = useState<string | null>(null)
   const [importedDocsExpanded, setImportedDocsExpanded] = useState(false)
@@ -433,8 +448,41 @@ export default function AgentReportPane({
             </div>
           </div>
 
-          {/* Expandable report card bundle */}
-          <div className={styles.cardBundle}>
+          {/* Completion screen — shown when all items reviewed (replaces cards) */}
+          {allReviewed && showCompletion && (
+            <div className={styles.completionScreen}>
+              <div className={styles.completionIconWrap}>
+                <CircleCheck size="large" />
+              </div>
+              <p className={styles.completionTitle}>Review complete</p>
+              <p className={styles.completionBody}>
+                All {TOTAL_REVIEW_ITEMS} issues reviewed and reconciled. This return is ready to move forward.
+              </p>
+              <div className={styles.completionSignOff}>
+                <span className={styles.completionSignOffLabel}>Signed off by</span>
+                <div className={styles.completionSignOffRow}>
+                  {[...reviewedFields.values()].slice(0, 1).map((v, idx) => (
+                    <span key={idx} style={{ display: 'contents' }}>
+                      <span className={styles.completionAvatar}>{v.by.split(' ').map((n: string) => n[0]).join('')}</span>
+                      <span className={styles.completionByName}>{v.by}</span>
+                      <span className={styles.completionAt}>· {v.at}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.completionActions}>
+                <Button priority="primary" size="medium" onClick={() => {}}>
+                  Complete return review
+                </Button>
+                <button className={styles.completionSecondaryBtn} onClick={() => setShowCompletion(false)}>
+                  Review again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Expandable report card bundle — hidden when completion screen is shown */}
+          <div className={styles.cardBundle} style={allReviewed && showCompletion ? { display: 'none' } : {}}>
             {REPORT_CARDS.map((card, i) => {
               const remaining = card.keys.filter(k => !reviewedFields.has(k)).length
               const cardDone = remaining === 0
@@ -457,8 +505,10 @@ export default function AgentReportPane({
 
                 {/* ── YoY analysis findings ── */}
                 {card.label === 'YoY analysis' && expandedCard === 'YoY analysis' && (() => {
-                  const wagesReviewed = reviewedFields.has('wages')
-                  const intReviewed   = reviewedFields.has('taxableInterest')
+                  const wagesSignOff  = reviewedFields.get('wages')
+                  const wagesReviewed = !!wagesSignOff
+                  const intSignOff    = reviewedFields.get('taxableInterest')
+                  const intReviewed   = !!intSignOff
                   const prior = 146000
                   const diff = total1a - prior
                   const pct = Math.round((diff / prior) * 100)
@@ -473,6 +523,9 @@ export default function AgentReportPane({
                           <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('wages') + 1} of {GUIDED_ORDER.length}</span>
                           {wagesReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
+                        {wagesSignOff && (
+                          <span className={styles.findingSignOff}>{wagesSignOff.by} · {wagesSignOff.at}</span>
+                        )}
                         <p className={styles.findingBody}>
                           Wages {diff < 0 ? 'dropped' : 'increased'} by ${diffK}k ({pct > 0 ? '+' : ''}{pct}%) vs. prior year.
                         </p>
@@ -496,6 +549,9 @@ export default function AgentReportPane({
                           <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('taxableInterest') + 1} of {GUIDED_ORDER.length}</span>
                           {intReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
+                        {intSignOff && (
+                          <span className={styles.findingSignOff}>{intSignOff.by} · {intSignOff.at}</span>
+                        )}
                         <p className={styles.findingBody}>
                           MegaBank 1099-INT shows $4,535 in interest income — a 42% jump vs. prior year ($3,194).
                         </p>
@@ -516,7 +572,8 @@ export default function AgentReportPane({
 
                 {/* ── Scan quality finding — Tech Circle W-2 Box 12 ── */}
                 {card.label === 'Scan quality & inputs' && expandedCard === 'Scan quality & inputs' && (() => {
-                  const isReviewed = reviewedFields.has(SCAN_QUALITY_ISSUE.issueKey)
+                  const signOff = reviewedFields.get(SCAN_QUALITY_ISSUE.issueKey)
+                  const isReviewed = !!signOff
                   return (
                     <div className={styles.findingCard}>
                       <button className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[SCAN_QUALITY_ISSUE.issueKey as IssueKey] ?? null)}>
@@ -526,6 +583,7 @@ export default function AgentReportPane({
                           <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('scanQuality') + 1} of {GUIDED_ORDER.length}</span>
                           {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
+                        {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                         <p className={styles.findingBody}>
                           Box 12 (401k deferral) scanned at 68% confidence. The captured amount of $5,000 may be incorrect.
                         </p>
@@ -546,7 +604,8 @@ export default function AgentReportPane({
 
                 {/* ── IRS Compliance — underpayment risk ── */}
                 {card.label === 'IRS compliance' && expandedCard === 'IRS compliance' && (() => {
-                  const isReviewed = reviewedFields.has(IRS_COMPLIANCE_ISSUE.issueKey)
+                  const signOff = reviewedFields.get(IRS_COMPLIANCE_ISSUE.issueKey)
+                  const isReviewed = !!signOff
                   return (
                     <div className={styles.findingCard}>
                       <button className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[IRS_COMPLIANCE_ISSUE.issueKey as IssueKey] ?? null)}>
@@ -556,6 +615,7 @@ export default function AgentReportPane({
                           <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('irsCompliance') + 1} of {GUIDED_ORDER.length}</span>
                           {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
+                        {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                         <p className={styles.findingBody}>
                           Total withholding ($15,987) may be below the 90% safe harbor threshold for Jordan's estimated liability.
                         </p>
@@ -578,7 +638,8 @@ export default function AgentReportPane({
                 {card.label === 'Credits & deductions' && expandedCard === 'Credits & deductions' && (
                   <div className={styles.findingCard} style={{ gap: 12 }}>
                     {CREDITS_ITEMS.map((item) => {
-                      const isReviewed = reviewedFields.has(item.issueKey)
+                      const signOff = reviewedFields.get(item.issueKey)
+                      const isReviewed = !!signOff
                       return (
                         <button key={item.issueKey} className={styles.findingInner} onClick={() => onHighlightField?.(ISSUE_FIELD[item.issueKey as IssueKey] ?? null)}>
                           <div className={styles.findingTitleRow}>
@@ -590,6 +651,7 @@ export default function AgentReportPane({
                             <span className={styles.issueChip}>{GUIDED_ORDER.indexOf(item.issueKey as IssueKey) + 1} of {GUIDED_ORDER.length}</span>
                             {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                           </div>
+                          {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
                           <p className={styles.findingBody}>
                             {item.issueKey === 'qualifiedDivs'
                               ? 'Citigroup 1099-DIV: $20.10 qualified dividends (Box 1b). Confirm tax rate applies.'
@@ -617,18 +679,6 @@ export default function AgentReportPane({
               </div>
             )})}
           </div>
-
-          {/* Completion screen — shown when all items reviewed */}
-          {allReviewed && showCompletion && (
-            <div className={styles.completionScreen}>
-              <span className={styles.completionIcon}>✓</span>
-              <p className={styles.completionTitle}>Review complete</p>
-              <p className={styles.completionBody}>All {TOTAL_REVIEW_ITEMS} items reviewed. You're ready to continue.</p>
-              <button className={styles.completionBackBtn} onClick={() => setShowCompletion(false)}>
-                Back to overview
-              </button>
-            </div>
-          )}
 
         </div>
       </div>

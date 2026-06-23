@@ -19,7 +19,7 @@ interface IssueDetailPaneProps {
   reviewedCount?: number
   totalItems?: number
   closing?: boolean
-  reviewedFields?: Set<string>
+  reviewedFields?: Map<string, { by: string; at: string }>
   issueNumber?: number
   category?: string
   onClose?: () => void
@@ -83,7 +83,8 @@ export default function IssueDetailPane({
   onOpenQuestionnaire,
 }: IssueDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
-  const isReviewed = reviewedFields?.has(issueKey) ?? false
+  const signOff = reviewedFields?.get(issueKey)
+  const isReviewed = !!signOff
 
   const handleMarkReviewed = () => {
     if (!isReviewed) onMarkReviewed?.(issueKey)
@@ -238,12 +239,17 @@ export default function IssueDetailPane({
               </Button>
             </Tooltip>
             {isReviewed ? (
-              <Tooltip text="You've already marked this finding as reviewed">
-                <button className={styles.reviewedBtn} disabled>
-                  <CircleCheck size="small" />
-                  <span>Reviewed</span>
-                </button>
-              </Tooltip>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Tooltip text="You've already marked this finding as reviewed">
+                  <button className={styles.reviewedBtn} disabled>
+                    <CircleCheck size="small" />
+                    <span>Reviewed</span>
+                  </button>
+                </Tooltip>
+                {signOff && (
+                  <span className={styles.signOffStamp}>{signOff.by} · {signOff.at}</span>
+                )}
+              </div>
             ) : (
               <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
                 <Button priority="secondary" size="small" onClick={handleMarkReviewed}>

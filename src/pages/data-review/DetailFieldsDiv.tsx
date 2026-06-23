@@ -45,7 +45,7 @@ interface DetailFieldsDivProps {
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
   onMarkReviewed?: (field: string) => void
-  reviewedFields?: Set<string>
+  reviewedFields?: Map<string, { by: string; at: string }>
 }
 
 export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields }: DetailFieldsDivProps) {

@@ -75,8 +75,8 @@ export default function DataReviewPage() {
   // Which agent subview to restore when going back to agent insights
   // 'overview' = report overview, 'yoyDetail' = YoY detail pane open
   const [agentSubView, setAgentSubView] = useState<'overview' | 'yoyDetail'>('overview')
-  // Set of 1040 field names that have been marked as reviewed in the agent pane
-  const [reviewedFields, setReviewedFields] = useState<Set<string>>(new Set())
+  // Map of reviewed field keys → sign-off metadata { by, at }
+  const [reviewedFields, setReviewedFields] = useState<Map<string, { by: string; at: string }>>(new Map())
   // Set of 1040 field names manually checked off by the preparer (independent of AI review)
   const [checkedFields, setCheckedFields] = useState<Set<string>>(new Set())
 
@@ -163,8 +163,16 @@ export default function DataReviewPage() {
     }, 350)
   }
 
+  const PREPARER_NAME = 'Juan Alzate'
+
   const handleMarkReviewed = (fieldName: string) => {
-    setReviewedFields(prev => new Set([...prev, fieldName]))
+    const now = new Date()
+    const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+    setReviewedFields(prev => {
+      const next = new Map(prev)
+      next.set(fieldName, { by: PREPARER_NAME, at })
+      return next
+    })
   }
 
   const bodyRef = useRef<HTMLDivElement>(null)

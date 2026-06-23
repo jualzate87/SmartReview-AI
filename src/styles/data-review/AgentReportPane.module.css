@@ -622,17 +622,30 @@
   margin-left: auto;
 }
 
+/* Sign-off attribution line under finding cards */
+.findingSignOff {
+  font-family: Arial, sans-serif !important;
+  font-size: 11px;
+  font-weight: 400;
+  color: #8a9299;
+  padding: 0 2px 4px;
+}
+
 /* ── Completion screen ── */
 .completionScreen {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  padding: 32px 16px;
+  padding: 28px 20px 24px;
   text-align: center;
+  background: linear-gradient(180deg, #f0faf5 0%, #ffffff 60%);
+  border-radius: 12px;
+  border: 1px solid #c6ead9;
+  margin: 8px 0;
 }
 
-.completionIcon {
+.completionIconWrap {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -641,8 +654,6 @@
   border-radius: 50%;
   background: #e6f6ef;
   color: #1a8254;
-  font-size: 24px;
-  font-weight: 700;
 }
 
 .completionTitle {
@@ -656,29 +667,92 @@
 
 .completionBody {
   font-family: Arial, sans-serif !important;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
   line-height: 1.5;
   color: #5d686f;
   margin: 0;
+  max-width: 280px;
 }
 
-.completionBackBtn {
-  display: inline-flex;
+/* Sign-off attribution inside completion screen */
+.completionSignOff {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 8px 20px;
-  border: 1px solid #d4d7dc;
-  border-radius: 4px;
+  gap: 5px;
+  padding: 10px 16px;
   background: #ffffff;
-  font-family: Arial, sans-serif !important;
-  font-size: 14px;
-  font-weight: 600;
-  color: #393a3d;
-  cursor: pointer;
-  transition: background 120ms ease;
-  margin-top: 8px;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  width: 100%;
 }
-.completionBackBtn:hover { background: #f4f5f8; }
+
+.completionSignOffLabel {
+  font-family: Arial, sans-serif !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #8a9299;
+}
+
+.completionSignOffRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.completionAvatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #205ea3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Arial, sans-serif !important;
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.completionByName {
+  font-family: Arial, sans-serif !important;
+  font-size: 13px;
+  font-weight: 600;
+  color: #21262a;
+}
+
+.completionAt {
+  font-family: Arial, sans-serif !important;
+  font-size: 13px;
+  font-weight: 400;
+  color: #8a9299;
+}
+
+.completionActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.completionSecondaryBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: Arial, sans-serif !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #5d686f;
+  text-decoration: underline;
+  padding: 4px;
+}
+.completionSecondaryBtn:hover { color: #21262a; }
 
 /* ── Input area ── */
 .inputArea {

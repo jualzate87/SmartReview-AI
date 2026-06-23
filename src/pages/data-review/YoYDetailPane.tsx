@@ -16,7 +16,7 @@ interface YoYDetailPaneProps {
   totalItems?: number
   closing?: boolean
   /** Set of reviewed field names — used to persist reviewed state across remounts */
-  reviewedFields?: Set<string>
+  reviewedFields?: Map<string, { by: string; at: string }>
   issueNumber?: number
   category?: string
   onPrev?: () => void
@@ -44,7 +44,8 @@ const WAGES_QA = {
 export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields, issueNumber, category, onPrev, onNext, totalIssues = 6, onOpenQuestionnaire }: YoYDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   // Derive reviewed state from parent set so it survives remounts
-  const isReviewed = reviewedFields?.has(FINDING_FIELD) ?? false
+  const signOff = reviewedFields?.get(FINDING_FIELD)
+  const isReviewed = !!signOff
 
   const handleMarkReviewed = () => {
     if (!isReviewed) {
@@ -186,12 +187,17 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
               </Button>
             </Tooltip>
             {isReviewed ? (
-              <Tooltip text="You've already marked this finding as reviewed">
-                <button className={styles.reviewedBtn} disabled>
-                  <CircleCheck size="small" />
-                  <span>Reviewed</span>
-                </button>
-              </Tooltip>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <Tooltip text="You've already marked this finding as reviewed">
+                  <button className={styles.reviewedBtn} disabled>
+                    <CircleCheck size="small" />
+                    <span>Reviewed</span>
+                  </button>
+                </Tooltip>
+                {signOff && (
+                  <span className={styles.signOffStamp}>{signOff.by} · {signOff.at}</span>
+                )}
+              </div>
             ) : (
               <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
                 <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
