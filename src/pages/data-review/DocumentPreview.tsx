@@ -8,30 +8,31 @@ interface FieldOverlay {
   left: string; top: string; width: string; height: string
 }
 
-// Overlay positions (%) for each 1040 field on each document image
-// Positions measured against the actual PNG dimensions
-// Overlay positions — measured via pixel-level border scan on each PNG
-// W-2: 2284×1540px  |  1099-INT: 1146×762px
-// W-2:  Box 1 cell x=1240–1725, Box 2 cell x=1725–2212, wages/withholding row y=68–188
-//        Box 12a row x=1240–2212, y=681–779
-// 1099-INT: value column x=542–942; row 1 y=55–197; EW row y=197–269
+// Overlay positions (%) measured via pixel-level border scan on each PNG
+// W-2 (both): 2284×1540px — wages row y=66–185; Box1/2 split x=1724; right edge x=2213
+// 1099-INT (MegaBank): 1146×762px — value col x=542–742; Box1 y=54–197; Box2 y=197–269
+// 1099-DIV (Citigroup): 1400×620px — box row y=277–370; Box1a x=2–200; Box1b x=200–390
 const OVERLAYS: Record<DocType, Partial<Record<string, FieldOverlay>>> = {
   'w2': {
-    // Box 1  "1 Wages, tips / 60,000"        x=1240–1725, y=68–188
-    wages:       { left: '54.3%', top: '4.4%',  width: '21.2%', height: '7.8%' },
-    // Box 2  "2 Federal income tax / 10,000"  x=1725–2212, y=68–188
-    withholding: { left: '75.5%', top: '4.4%',  width: '21.3%', height: '7.8%' },
-    // Box 12a "D / 5000"  x=1240–2212, y=681–779 (full 12a row)
-    box12:       { left: '54.3%', top: '44.2%', width: '42.6%', height: '6.4%' },
+    // Box 1  "1 Wages, tips"  x=1100–1724, y=148–265  (pixel-verified, below OMB row border)
+    wages:       { left: '48.2%', top: '9.6%', width: '27.3%', height: '7.6%' },
+    // Box 2  "2 Federal income tax withheld"  x=1724–2213, y=148–265
+    withholding: { left: '75.5%', top: '9.6%', width: '21.4%', height: '7.6%' },
+    // Box 12a  x=1240–2212, y=474–554
+    box12:       { left: '54.3%', top: '30.8%', width: '42.6%', height: '5.2%' },
   },
   '1099-int': {
-    // Box 1  "1 Interest income / 3500"  x=542–942, y=55–197
-    taxableInterest: { left: '47.3%', top: '7.2%',  width: '34.9%', height: '18.6%' },
-    // Box 2  "2 Early withdrawal / 0"    x=542–942, y=197–269
-    earlyWithdrawal: { left: '47.3%', top: '25.9%', width: '34.9%', height:  '9.4%' },
+    // Box 1  "1 Interest income"  x=542–742, y=54–197
+    taxableInterest: { left: '47.3%', top: '7.1%',  width: '17.5%', height: '18.8%' },
+    // Box 2  "2 Early withdrawal penalty"  x=542–742, y=197–269
+    earlyWithdrawal: { left: '47.3%', top: '25.9%', width: '17.5%', height:  '9.4%' },
   },
-  // No 1099-DIV image yet — overlays suppressed to avoid mismatch
-  '1099-div': {},
+  '1099-div': {
+    // Box 1a  "Total ordinary dividends"  x=2–200, y=277–370
+    ordinaryDivs:  { left: '0.1%',  top: '44.7%', width: '14.1%', height: '15.0%' },
+    // Box 1b  "Qualified dividends"        x=200–390, y=277–370
+    qualifiedDivs: { left: '14.3%', top: '44.7%', width: '13.6%', height: '15.0%' },
+  },
   'k1': {},
 }
 
@@ -66,7 +67,7 @@ export default function DocumentPreview({ imageSrc, alt, selectedField, highligh
             className={styles.documentImage}
           />
 
-          {/* Field highlight overlay — orange for issue mode, blue for generic */}
+          {/* Field highlight overlay — marker-pen style highlight over the field */}
           {overlay && (
             <div
               style={{
@@ -76,15 +77,19 @@ export default function DocumentPreview({ imageSrc, alt, selectedField, highligh
                 width:  overlay.width,
                 height: overlay.height,
                 background: highlightMode === 'orange'
-                  ? 'rgba(201, 80, 15, 0.08)'
-                  : 'rgba(32, 94, 163, 0.08)',
-                border: highlightMode === 'orange'
-                  ? '2px solid #c9500f'
-                  : '2px solid #205ea3',
+                  ? 'rgba(201, 80, 15, 0.22)'
+                  : 'rgba(32, 94, 163, 0.18)',
+                outline: highlightMode === 'orange'
+                  ? '3px solid rgba(201, 80, 15, 0.7)'
+                  : '3px solid rgba(32, 94, 163, 0.7)',
+                outlineOffset: '1px',
                 borderRadius: '2px',
                 pointerEvents: 'none',
                 zIndex: 3,
                 transition: 'opacity 200ms ease',
+                boxShadow: highlightMode === 'orange'
+                  ? '0 0 0 4px rgba(201, 80, 15, 0.08)'
+                  : '0 0 0 4px rgba(32, 94, 163, 0.08)',
               }}
             />
           )}

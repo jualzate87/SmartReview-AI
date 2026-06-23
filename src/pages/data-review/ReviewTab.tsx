@@ -14,9 +14,10 @@ interface ReviewTabProps {
   onTopTabChange?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1') => void
   onTabChange?: (tab: string) => void
   onPopOut?: () => void
+  isPopout?: boolean
 }
 
-export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut }: ReviewTabProps) {
+export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut, isPopout = false }: ReviewTabProps) {
 
   const handleTabClick = (key: string, label: string) => {
     if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === 'k1') {
@@ -47,14 +48,28 @@ export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabC
         ))}
       </div>
 
-      {/* Pop-out button — opens right panel in new tab */}
-      <button
-        className={styles.popOutBtn}
-        aria-label="Pop out to new window"
-        onClick={onPopOut}
-      >
-        <PopOut size="medium" />
-      </button>
+      {/* Dock-back button (popout window) or Pop-out button (main window) */}
+      {isPopout ? (
+        <button
+          className={styles.dockBackBtn}
+          aria-label="Close and dock back"
+          onClick={() => window.close()}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M1 1L6 6M6 6H2M6 6V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+          </svg>
+          Dock back
+        </button>
+      ) : (
+        <button
+          className={styles.popOutBtn}
+          aria-label="Pop out to new window"
+          onClick={onPopOut}
+        >
+          <PopOut size="medium" />
+        </button>
+      )}
     </div>
   )
 }

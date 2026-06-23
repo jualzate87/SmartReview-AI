@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100vh;
   background: var(--page\/background\/secondary, #f0f4f6);
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   overflow: hidden;
 }
 
@@ -60,7 +60,7 @@
 }
 
 .navCategoryLabel {
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -89,7 +89,7 @@
 }
 
 .navSecondaryLabel {
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
@@ -109,7 +109,7 @@
 
 /* Title — 20px Medium #21262a */
 .sectionTitle {
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 20px;
   font-weight: 500;
   line-height: 28px;
@@ -147,7 +147,7 @@
   width: 352px;
   min-width: 352px;
   padding: 8px;
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
@@ -157,7 +157,7 @@
 .colValue {
   flex: 1;
   padding: 8px;
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;

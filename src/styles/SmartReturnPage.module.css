@@ -5,7 +5,7 @@
   flex-direction: row;
   height: 100vh;
   background: #ffffff;
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   overflow: hidden;
   --color-action-standard: #205ea3;
   --color-action-standard-hover: #174d87;
@@ -40,7 +40,7 @@
 }
 
 .firmName {
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -63,7 +63,7 @@
   cursor: pointer;
   padding: 6px 8px;
   border-radius: 4px;
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 400;
   color: #393a3d;
@@ -119,7 +119,7 @@
   font-size: 13px;
   color: #393a3d;
   padding: 0;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
 }
 .breadcrumbBtn:hover { color: #205ea3; }
 
@@ -141,7 +141,7 @@
 }
 
 .cardTitle {
-  font-family: var(--font-name-component, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 20px;
   font-weight: 700;
   color: #21262a;
@@ -186,7 +186,7 @@
   font-weight: 700;
   cursor: pointer;
   margin-top: 4px;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
 }
 .reviewBtn:hover { background: #174d87; }
 
@@ -196,7 +196,7 @@
   margin: 0;
   margin-top: 24px;
   text-align: center;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
 }
 
 .feedbackLink {
@@ -207,7 +207,7 @@
   font-size: 13px;
   font-weight: 600;
   padding: 0;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
 }
 .feedbackLink:hover { text-decoration: underline; }
 
@@ -239,7 +239,7 @@
   font-size: 10px;
   line-height: 1.2;
   text-align: center;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
 }
 .sidebarItem:hover { background: #f4f5f8; color: #393a3d; }
 

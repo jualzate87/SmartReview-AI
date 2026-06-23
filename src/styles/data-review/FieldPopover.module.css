@@ -75,7 +75,7 @@
 
 .fieldLabel {
   flex: 1;
-  font-family: var(--font-name-body, 'Avenir Next forINTUIT', sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 600;
   color: #21262a;

@@ -30,7 +30,7 @@
 }
 
 .title {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 20px;
   font-weight: 500;
   line-height: 28px;
@@ -78,7 +78,7 @@
 }
 
 .subTabLabel {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;
@@ -142,7 +142,7 @@
   display: flex;
   align-items: center;
   gap: 0;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
@@ -166,7 +166,7 @@
   padding: 10px 20px;
   margin: 0 20px;
   background: #f0f4f6;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
@@ -192,7 +192,7 @@
 
 /* Field label — 300px, left side */
 .fieldLabel {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
@@ -207,7 +207,7 @@
 
 /* Input field — 300px, 36px height, border #859299 */
 .fieldInput {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 16px;
   font-weight: 500;
   line-height: 24px;
@@ -257,7 +257,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 400;
   color: #859299;
@@ -274,7 +274,7 @@
 
 /* Edit button — appears next to highlighted input */
 .editBtn {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 500;
   line-height: 16px;
@@ -312,7 +312,7 @@
 
 /* Save button */
 .saveBtn {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 600;
   line-height: 16px;
@@ -331,7 +331,7 @@
 
 /* Undo button */
 .undoBtn {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 500;
   line-height: 16px;
@@ -353,7 +353,7 @@
 
 /* Recalculated badge — flashes briefly after saving */
 .recalcBadge {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 500;
   color: #00856d;
@@ -372,7 +372,7 @@
 
 /* Mark as correct button — green-tinted, appears next to Edit button when field is highlighted */
 .markCorrectBtn {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 500;
   line-height: 16px;
@@ -395,7 +395,7 @@
 
 /* Reviewed badge — replaces Edit/Mark buttons once field is marked correct */
 .reviewedBadge {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -412,7 +412,7 @@
 
 /* Persistent "Edited" badge — stays visible after a value has been changed */
 .editedBadge {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -505,7 +505,7 @@
 }
 
 .checkboxLabel {
-  font-family: var(--font-name-body, sans-serif);
+  font-family: Arial, sans-serif !important;
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;

@@ -84,6 +84,23 @@ export const FIELD_META: Record<string, FieldMeta> = {
     prior: 138816,
     current: 119872,
   },
+  withholding: {
+    label: 'Federal income tax withheld',
+    prior: 21400,
+    current: 15987,
+    sources: [
+      { label: 'Bing Equipment (W-2)', value: 10000 },
+      { label: 'Tech Circle (W-2)',    value: 5987  },
+    ],
+  },
+  box12: {
+    label: 'Box 12 — 401(k) contributions',
+    prior: 4800,
+    current: 5000,
+    sources: [
+      { label: 'Bing Equipment (W-2 Box 12)', value: 5000 },
+    ],
+  },
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -93,7 +110,7 @@ interface FieldPopoverProps {
   /** Viewport rect of the value cell — used for fixed positioning */
   anchorRect: DOMRect
   onClose: () => void
-  onViewSource?: (fieldName: string) => void
+  onViewSource?: (fieldName: string, sourceLabel?: string) => void
 }
 
 function fmt(n: number) {
@@ -204,7 +221,7 @@ export default function FieldPopover({
           {meta.sources.map(s => (
             <div key={s.label} className={styles.sourceRow}>
               {/* Link: name + panel icon together, inline */}
-              <button className={styles.sourceLink} onClick={() => onViewSource?.(fieldName)}>
+              <button className={styles.sourceLink} onClick={() => onViewSource?.(fieldName, s.label)}>
                 {s.label}
                 <span className={styles.sourcePanelIcon}><Panel size="small" /></span>
               </button>

@@ -6,7 +6,7 @@ import w2BingEquipment from '../assets/w2-bing-equipment.png'
 export default function DataReviewPopout() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <ReviewTab />
+      <ReviewTab isPopout />
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
         <div style={{ flex: 1, overflow: 'hidden', borderRight: '1px solid #d5dee3' }}>
           <DocumentPreview imageSrc={w2BingEquipment} alt="W-2 Bing Equipment" />

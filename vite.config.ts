@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { execSync } from 'child_process'
 
 export default defineConfig({
-  base: process.env.GITHUB_ACTIONS ? '/SmartReturn-ArnavE2E/' : '/',
+  base: process.env.VITE_BASE_PATH ?? (process.env.GITHUB_ACTIONS ? '/SmartReturn-ArnavE2E/' : '/'),
   plugins: [
     react(),
     {

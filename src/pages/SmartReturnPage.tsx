@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, CircleCheckFill, NewWindow, Notification, Settings, Lock, ChevronDown, List, Rocket, Edit, Checklist, Send, CloudUpload, CircleClock } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
-import ProConnectNav from './ProConnectNav'
 import helpIcon from '../assets/icons/help-icon.svg'
 import sidebarTaxOrganizerIcon from '../assets/icons/sidebar-tax-organizer.svg'
 import sidebarImportHubIcon from '../assets/icons/sidebar-import-hub.svg'
@@ -40,8 +39,6 @@ export default function SmartReturnPage() {
 
   return (
     <div className={styles.page} data-theme="intuit">
-
-      <ProConnectNav activeItem="smart-return" />
 
       <div className={styles.rightSide}>
         {/* ── Top product bar ── */}
@@ -130,14 +127,6 @@ export default function SmartReturnPage() {
 
         {/* Main content area */}
         <div className={styles.main}>
-          {/* Back breadcrumb */}
-          <div className={styles.breadcrumb}>
-            <button className={styles.breadcrumbBtn} onClick={() => navigate(-1)}>
-              <ArrowLeft size="small" />
-              Back to SmartReturn
-            </button>
-          </div>
-
           {/* Center card */}
           <div className={styles.card}>
             <CircleCheckFill size="large" className={styles.checkIcon} />
