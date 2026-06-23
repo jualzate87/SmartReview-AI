@@ -102,43 +102,43 @@ export default function IssueDetailPane({
   return (
     <div className={`${styles.panel} ${closing ? styles.panelClosing : ''}`}>
 
+      {/* ── Sticky nav (outside scroll area) ── */}
+      <div className={styles.stickyNav}>
+        <div className={styles.navRow}>
+          <button className={styles.backLink} onClick={onBack}>
+            <ChevronLeft size="small" />
+            <span>Back to overview</span>
+          </button>
+          <div className={styles.navProgress}>
+            <div className={styles.miniProgressTrack}>
+              <div
+                className={styles.miniProgressFill}
+                style={{ width: `${Math.max(reviewedCount / totalItems * 100, reviewedCount > 0 ? 8 : 0)}%` }}
+              />
+            </div>
+            <span className={styles.counter}>
+              <strong className={styles.counterNum}>{reviewedCount}</strong> of {totalItems} reviewed
+            </span>
+          </div>
+        </div>
+        {(onPrev !== undefined || onNext !== undefined || issueNumber != null) && (
+          <div className={styles.issueNavBar}>
+            <button className={styles.issueNavBtn} onClick={onPrev} disabled={!onPrev} aria-label="Previous issue">
+              <ChevronLeft size="small" /> Previous issue
+            </button>
+            {issueNumber != null && (
+              <span className={styles.issueNavCounter}>Issue {issueNumber} of {totalIssues}</span>
+            )}
+            <button className={styles.issueNavBtn} onClick={onNext} disabled={!onNext} aria-label="Next issue">
+              Next issue <ChevronRight size="small" />
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* ── Scrollable pane ── */}
       <div className={styles.pane}>
         <div className={styles.chat}>
-
-          {/* Back + progress row */}
-          <div className={styles.navRow}>
-            <button className={styles.backLink} onClick={onBack}>
-              <ChevronLeft size="small" />
-              <span>Back to overview</span>
-            </button>
-            <div className={styles.navProgress}>
-              <div className={styles.miniProgressTrack}>
-                <div
-                  className={styles.miniProgressFill}
-                  style={{ width: `${Math.max(reviewedCount / totalItems * 100, reviewedCount > 0 ? 8 : 0)}%` }}
-                />
-              </div>
-              <span className={styles.counter}>
-                <strong className={styles.counterNum}>{reviewedCount}</strong> of {totalItems} reviewed
-              </span>
-            </div>
-          </div>
-
-          {/* Issue navigation bar */}
-          {(onPrev !== undefined || onNext !== undefined || issueNumber != null) && (
-            <div className={styles.issueNavBar}>
-              <button className={styles.issueNavBtn} onClick={onPrev} disabled={!onPrev} aria-label="Previous issue">
-                <ChevronLeft size="small" /> Previous issue
-              </button>
-              {issueNumber != null && (
-                <span className={styles.issueNavCounter}>Issue {issueNumber} of {totalIssues}</span>
-              )}
-              <button className={styles.issueNavBtn} onClick={onNext} disabled={!onNext} aria-label="Next issue">
-                Next issue <ChevronRight size="small" />
-              </button>
-            </div>
-          )}
 
           {/* Issue subheader */}
           <div className={styles.issueHero}>
