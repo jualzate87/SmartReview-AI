@@ -88,7 +88,7 @@
   flex: 1;
   overflow-x: hidden;
   overflow-y: auto;
-  padding: 20px 16px 16px;
+  padding: 20px 16px 32px;
   display: flex;
   flex-direction: column;
 }
@@ -575,12 +575,19 @@
 }
 
 /* ── Action buttons ── */
+.actionButtonsWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 24px;
+  padding-bottom: 16px;
+}
+
 .actionButtons {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 12px;
   flex-wrap: wrap;
-  margin-top: 24px;
 }
 
 /* ── Prev / Next navigation — right-aligned within the action button row ── */
@@ -591,13 +598,14 @@
   margin-left: auto;
 }
 
-/* Sign-off stamp below reviewed button */
+/* Sign-off stamp below action buttons row */
 .signOffStamp {
   font-family: Arial, sans-serif !important;
   font-size: 11px;
   font-weight: 400;
   color: #8a9299;
   padding-left: 2px;
+  padding-bottom: 8px;
 }
 
 /* Reviewed state button — IDS positive, small button sizing */

@@ -179,31 +179,31 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             </ul>
           </div>
 
-          {/* Action buttons + nav arrows in one row */}
-          <div className={styles.actionButtons}>
-            <Tooltip text="Open the W-2 source documents to compare wages side-by-side and update any values">
-              <Button priority="primary" size="small" onClick={onReviewSource ?? onViewW2}>
-                <Panel size="small" /> View source
-              </Button>
-            </Tooltip>
-            {isReviewed ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {/* Action buttons + sign-off stamp */}
+          <div className={styles.actionButtonsWrap}>
+            <div className={styles.actionButtons}>
+              <Tooltip text="Open the W-2 source documents to compare wages side-by-side and update any values">
+                <Button priority="primary" size="small" onClick={onReviewSource ?? onViewW2}>
+                  <Panel size="small" /> View source
+                </Button>
+              </Tooltip>
+              {isReviewed ? (
                 <Tooltip text="You've already marked this finding as reviewed">
                   <button className={styles.reviewedBtn} disabled>
                     <CircleCheck size="small" />
                     <span>Reviewed</span>
                   </button>
                 </Tooltip>
-                {signOff && (
-                  <span className={styles.signOffStamp}>{signOff.by} · {signOff.at}</span>
-                )}
-              </div>
-            ) : (
-              <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
-                <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
-                  <CircleCheck size="small" /> Mark as reviewed
-                </Button>
-              </Tooltip>
+              ) : (
+                <Tooltip text="Confirm you've checked this finding. Progress is tracked automatically.">
+                  <Button priority="secondary" size="small" onClick={handleMarkReviewed}>
+                    <CircleCheck size="small" /> Mark as reviewed
+                  </Button>
+                </Tooltip>
+              )}
+            </div>
+            {signOff && (
+              <span className={styles.signOffStamp}>{signOff.by} · {signOff.at}</span>
             )}
           </div>
 
