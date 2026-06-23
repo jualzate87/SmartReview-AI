@@ -13,6 +13,7 @@ import scannerIcon from '../../assets/icons/scanner.svg'
 import taxesAndCreditsIcon from '../../assets/icons/taxes-and-credits.svg'
 import YoYDetailPane from './YoYDetailPane'
 import IssueDetailPane from './IssueDetailPane'
+import QuestionnairePane from './QuestionnairePane'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
@@ -67,16 +68,17 @@ const TAXABLE_INTEREST_ISSUE = {
   taxImpact: 'At Jordan\'s marginal rate (~22%), the additional $1,341 in interest income adds approximately $295 in federal tax compared to last year. The total interest income of $4,535 flows to Form 1040 line 2b.',
   rootCause: 'The increase may reflect a higher account balance, a new high-yield savings account, or a CD maturing during 2024. Box 3 (U.S. Savings Bond interest, $35) also contributes to the total on line 2b.',
   tableRows: [
-    { label: 'Box 1 (Interest income)', scanned: '$4,500', expected: '~$3,159 (prior yr)', confidence: '94%' },
-    { label: 'Box 3 (U.S. Bond int.)',  scanned: '$35',    expected: 'N/A',                confidence: '91%' },
-    { label: 'Line 2b total',           scanned: '$4,535', expected: '~$3,194 (prior yr)', confidence: '—'   },
+    { label: 'Box 1 (Interest income)', cols: ['$4,500',  '$3,159', '+$1,341', '+42%'], badge: 'red'    as const, total: false },
+    { label: 'Box 3 (U.S. Bond int.)',  cols: ['$35',     'N/A',    'N/A',     '—'  ], badge: undefined,          total: false },
+    { label: 'Line 2b total',           cols: ['$4,535',  '$3,194', '+$1,341', '+42%'], badge: 'red'    as const, total: true  },
   ],
-  tableHeaders: ['Field', 'Scanned value', 'Prior year / notes', 'Confidence'],
+  tableHeaders: ['Field', '2024', '2023', 'Change', ''],
   suggestedActions: [
     'Confirm the $4,500 Box 1 amount against the MegaBank 1099-INT source document.',
     'Ask Jordan whether a new savings account or CD was opened in 2024 to explain the increase.',
     'Confirm no additional 1099-INT documents are missing from the import.',
   ],
+  category: 'YoY analysis',
   viewSourceLabel: 'View 1099-INT',
   viewSourceTab: '1099-ints' as const,
   viewSourceSubTab: undefined,
@@ -93,15 +95,16 @@ const SCAN_QUALITY_ISSUE = {
   taxImpact: 'If the 401k contribution is understated, Jordan\'s taxable income may be overstated by up to the correct contribution amount. Each additional $1,000 in 401k deferrals reduces taxable income by $1,000 — saving approximately $220 in taxes.',
   rootCause: 'Box 12 on the Tech Circle W-2 is partially obscured by a fold in the uploaded document, reducing OCR accuracy on that field specifically.',
   tableRows: [
-    { label: 'Box 12 (Code D 401k)', scanned: '$5,000', expected: '$5,000–$23,000', confidence: '68%' },
-    { label: 'Box 1 (Wages)',        scanned: '$64,304', expected: 'N/A',            confidence: '96%' },
+    { label: 'Box 12 (Code D 401k)', cols: ['$5,000',  '$5k–$23k', '68%'], badge: 'red'  as const, total: false },
+    { label: 'Box 1 (Wages)',        cols: ['$64,304', 'N/A',      '96%'], badge: 'grey' as const, total: false },
   ],
-  tableHeaders: ['Field', 'Scanned value', 'Typical range', 'Confidence'],
+  tableHeaders: ['Field', 'Scanned', 'Typical range', 'Confidence'],
   suggestedActions: [
     'Open the Tech Circle W-2 in the document panel and locate Box 12 (Code D).',
     'Compare the printed value to the scanned amount of $5,000.',
     'If incorrect, update the field — the corrected amount flows automatically to Schedule 1.',
   ],
+  category: 'Scan quality',
   viewSourceLabel: 'View Tech Circle W-2',
   viewSourceTab: 'w2s' as const,
   viewSourceSubTab: 'techCircle' as const,
@@ -118,16 +121,17 @@ const IRS_COMPLIANCE_ISSUE = {
   taxImpact: 'Estimated tax on $119,872 taxable income is approximately $22,200 (2024 tax brackets, single filer). Withholding is ~72% of estimated liability — below the 90% safe harbor threshold. Potential penalty: $200–$400.',
   rootCause: 'Bing Equipment withheld $10,000 and Tech Circle withheld $5,987 — a combined $15,987. With total income of $134,472, the effective withholding rate is approximately 12%, which may fall short of the required amounts.',
   tableRows: [
-    { label: 'Bing Equipment (Box 2)', scanned: '$10,000', expected: 'N/A', confidence: '94%' },
-    { label: 'Tech Circle (Box 2)',    scanned: '$5,987',  expected: 'N/A', confidence: '96%' },
-    { label: 'Total withheld',         scanned: '$15,987', expected: '≥$19,980 (90%)', confidence: '—' },
+    { label: 'Bing Equipment (Box 2)', cols: ['$10,000', '≥$13,188', '-$3,188'], badge: undefined,           total: false },
+    { label: 'Tech Circle (Box 2)',    cols: ['$5,987',  '≥$6,792',  '-$805'  ], badge: undefined,           total: false },
+    { label: 'Total withheld',         cols: ['$15,987', '≥$19,980', '-$3,993'], badge: 'red' as const,      total: true  },
   ],
-  tableHeaders: ['Source', 'Withheld', 'Safe harbor target', 'Confidence'],
+  tableHeaders: ['Source', 'Withheld', '90% safe harbor', 'Gap'],
   suggestedActions: [
     'Confirm both W-2 Box 2 amounts against the source documents.',
     'Calculate Jordan\'s estimated 2024 tax liability to confirm whether withholding meets the 90% safe harbor.',
     'If withholding is insufficient, advise Jordan about Form 2210 and potential penalty.',
   ],
+  category: 'IRS compliance',
   viewSourceLabel: 'View W-2 withholding',
   viewSourceTab: 'w2s' as const,
   viewSourceSubTab: 'bingEquipment' as const,
@@ -144,15 +148,16 @@ const CREDITS_ITEMS = [
     taxImpact: 'At Jordan\'s estimated taxable income (~$119,872), qualified dividends are taxed at 15% — not 0%. Tax on $20.10 is approximately $3. No change needed, but worth confirming the holding period qualifies.',
     rootCause: 'Ordinary dividends are $31.24 (Box 1a); qualified portion is $20.10 (Box 1b). Both scanned at 94% confidence from the Citigroup 1099-DIV.',
     tableRows: [
-      { label: 'Box 1a (Ordinary divs)', scanned: '$31.24', expected: 'N/A', confidence: '94%' },
-      { label: 'Box 1b (Qualified divs)', scanned: '$20.10', expected: 'N/A', confidence: '94%' },
+      { label: 'Box 1a (Ordinary divs)', cols: ['$31.24', 'Ordinary', '~$7'], badge: undefined,         total: false },
+      { label: 'Box 1b (Qualified divs)', cols: ['$20.10', '15%',      '~$3'], badge: 'green' as const, total: true  },
     ],
-    tableHeaders: ['Field', 'Value', 'Notes', 'Confidence'],
+    tableHeaders: ['Field', 'Amount', 'Rate', 'Est. tax'],
     suggestedActions: [
       'Confirm the qualified dividend amount ($20.10) against the Citigroup 1099-DIV Box 1b.',
       'Confirm Jordan held the underlying shares for more than 60 days (required for qualified treatment).',
       'No tax change expected — document the review.',
     ],
+    category: 'Credits & deductions',
     viewSourceLabel: 'View 1099-DIV',
     viewSourceTab: '1099-divs' as const,
     viewSourceSubTab: undefined,
@@ -166,18 +171,20 @@ const CREDITS_ITEMS = [
     taxImpact: 'If a penalty was incorrectly captured as $0, Jordan may be missing a deduction. Each $100 in penalty reduces taxable income by $100, saving approximately $22 in taxes at Jordan\'s marginal rate.',
     rootCause: 'Box 2 on the MegaBank 1099-INT shows $0. Common for standard savings accounts. Verify with Jordan that no time-deposit was broken early in 2024.',
     tableRows: [
-      { label: 'Box 2 (Early penalty)', scanned: '$0', expected: '$0 (confirm)', confidence: '91%' },
+      { label: 'Box 1 (Interest)',        cols: ['$4,500', '$4,500', '✓'],   badge: 'green' as const, total: false },
+      { label: 'Box 2 (Early penalty)',   cols: ['$0',     'Confirm', '?'],  badge: 'orange' as const, total: false },
     ],
-    tableHeaders: ['Field', 'Scanned value', 'Expected', 'Confidence'],
+    tableHeaders: ['Field', 'Scanned', 'Expected', 'Status'],
     suggestedActions: [
       'Open the MegaBank 1099-INT and confirm Box 2 shows $0.',
       'Ask Jordan whether any CDs or time-deposit accounts were closed early in 2024.',
       'If a penalty was assessed, enter the amount — it flows to Schedule 1 as a deduction.',
     ],
+    category: 'Credits & deductions',
     viewSourceLabel: 'View 1099-INT',
     viewSourceTab: '1099-ints' as const,
     viewSourceSubTab: undefined,
-    viewSourceField: 'earlyWithdrawal', // own key so overlay hits Box 2, not Box 1
+    viewSourceField: 'earlyWithdrawal',
   },
 ]
 
@@ -220,6 +227,14 @@ export default function AgentReportPane({
   const [yoyDetailClosing, setYoyDetailClosing] = useState(false)
   const [issueDetailOpen, setIssueDetailOpen] = useState<string | null>(null)
   const [issueDetailClosing, setIssueDetailClosing] = useState(false)
+  const [questionnaireOpen, setQuestionnaireOpen] = useState(false)
+  const [questionnaireClosing, setQuestionnaireClosing] = useState(false)
+
+  const handleOpenQuestionnaire = () => setQuestionnaireOpen(true)
+  const handleCloseQuestionnaire = () => {
+    setQuestionnaireClosing(true)
+    setTimeout(() => { setQuestionnaireOpen(false); setQuestionnaireClosing(false) }, 220)
+  }
 
   // ── Detail pane navigation ─────────────────────────────────
   const openDetail = (key: string) => {
@@ -392,16 +407,16 @@ export default function AgentReportPane({
                   </div>
                   <span className={styles.confidenceBadge} data-level="high">94%</span>
                 </button>
-                <div className={styles.docRow} style={{ cursor: 'default' }}>
+                <button className={styles.docRow} onClick={handleOpenQuestionnaire}>
                   <div className={styles.docRowLeft}>
                     <div className={styles.docFileIcon} style={{ color: '#205ea3' }}><Document size="medium" /></div>
                     <div className={styles.docMeta}>
                       <span className={styles.docName}>Client-Questionnaire.pdf</span>
-                      <span className={styles.docSub}>Organizer · 4 responses</span>
+                      <span className={styles.docSub}>Organizer · 10 responses</span>
                     </div>
                   </div>
                   <span className={styles.confidenceBadge} data-level="high">100%</span>
-                </div>
+                </button>
               </div>
             )}
           </div>
@@ -661,16 +676,16 @@ export default function AgentReportPane({
           total1a={total1a}
           wages={wages}
           issueNumber={GUIDED_ORDER.indexOf('wages') + 1}
+          category="YoY analysis"
           totalIssues={GUIDED_ORDER.length}
           onPrev={isFirstIssue('wages') ? undefined : () => handlePrev('wages')}
           onNext={isLastIssue('wages') ? undefined : () => handleNext('wages')}
+          onOpenQuestionnaire={handleOpenQuestionnaire}
         />
       )}
 
       {/* ── Issue detail pane ── */}
       {(!!issueDetailOpen || issueDetailClosing) && activeIssue && (() => {
-        const vField = (activeIssue as typeof TAXABLE_INTEREST_ISSUE).viewSourceField as keyof typeof fieldValues | undefined
-        const currentVal = vField && fieldValues ? fieldValues[vField] : undefined
         return (
           <IssueDetailPane
             closing={issueDetailClosing}
@@ -687,9 +702,6 @@ export default function AgentReportPane({
             reviewedCount={reviewedCount}
             totalItems={TOTAL_REVIEW_ITEMS}
             reviewedFields={reviewedFields}
-            editableField={vField}
-            editableValue={currentVal}
-            onFieldValueChange={vField ? (val) => onFieldValueChange?.(vField, val) : undefined}
             onBack={handleCloseIssueDetail}
             onClose={() => { handleCloseIssueDetail(); onClose?.() }}
             onViewSource={() => {
@@ -703,12 +715,22 @@ export default function AgentReportPane({
             }}
             onMarkReviewed={onMarkReviewed}
             issueNumber={GUIDED_ORDER.indexOf(activeIssue.issueKey as IssueKey) + 1}
+            category={activeIssue.category}
             totalIssues={GUIDED_ORDER.length}
             onPrev={isFirstIssue(activeIssue.issueKey) ? undefined : () => handlePrev(activeIssue.issueKey)}
             onNext={isLastIssue(activeIssue.issueKey) ? undefined : () => handleNext(activeIssue.issueKey)}
+            onOpenQuestionnaire={handleOpenQuestionnaire}
           />
         )
       })()}
+
+      {/* ── Questionnaire pane ── */}
+      {(questionnaireOpen || questionnaireClosing) && (
+        <QuestionnairePane
+          closing={questionnaireClosing}
+          onBack={handleCloseQuestionnaire}
+        />
+      )}
 
     </div>
   )

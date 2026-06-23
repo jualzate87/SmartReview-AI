@@ -166,9 +166,11 @@
 .issueNavBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 0 10px;
-  height: 44px;
+  padding: 0 12px;
+  height: 32px;
+  min-width: 120px;
   border: 1px solid #d4d7dc;
   border-radius: 6px;
   background: #ffffff;
@@ -226,34 +228,53 @@
   pointer-events: none;
 }
 
-/* ── Client Q&A section ── */
+/* ── Section title row (no inline link anymore) ── */
+.sectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Client Q&A block ── */
 .qaBlock {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
   width: 100%;
+  border: 1px solid #e3e5e8;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
+/* Preparer question row */
 .qaQuestion {
   font-family: Arial, sans-serif !important;
   font-size: 13px;
   font-weight: 400;
   line-height: 1.5;
-  color: var(--text\/secondary, #5d686f);
+  color: #5d686f;
   margin: 0;
+  padding: 10px 12px;
+  background: #f8f9fb;
+  border-bottom: 1px solid #e3e5e8;
 }
 
 .qaQuestion strong {
-  font-weight: 600;
-  color: #21262a;
+  font-weight: 700;
+  color: #8a9299;
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
 }
 
+/* Client answer row */
 .qaBubble {
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  background: #f4f5f8;
-  border-radius: 0 8px 8px 8px;
+  background: #ffffff;
   padding: 10px 12px;
   width: 100%;
 }
@@ -262,7 +283,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #205ea3;
+  background: #393a3d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,6 +302,27 @@
   min-width: 0;
 }
 
+/* Source attribution footer */
+.qaSourceLink {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
+  background: #f8f9fb;
+  border-top: 1px solid #e3e5e8;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: Arial, sans-serif !important;
+  font-size: 11px;
+  font-weight: 400;
+  color: #8a9299;
+  border-top: 1px solid #e3e5e8;
+}
+.qaSourceLink:hover { background: #f0f1f3; color: #205ea3; }
+.qaSourceLink span { color: #205ea3; font-weight: 500; }
+
 .qaName {
   font-family: Arial, sans-serif !important;
   font-size: 11px;
@@ -298,7 +340,31 @@
   margin: 0;
 }
 
-/* ── Issue title row ── */
+/* ── Issue subheader — title + summary, clean separator treatment ── */
+.issueHero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e3e5e8;
+  width: 100%;
+}
+
+.categoryChip {
+  display: inline-block;
+  font-family: Arial, sans-serif !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #6b6c72);
+  background: var(--color-container-background-secondary, #f4f5f8);
+  border: 1px solid #e3e5e8;
+  border-radius: 4px;
+  padding: 2px 6px;
+  align-self: flex-start;
+}
+
 .titleRow {
   display: flex;
   align-items: center;
@@ -315,73 +381,56 @@
 
 .issueTitle {
   font-family: Arial, sans-serif !important;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
-  color: var(--text\/primary, #21262a);
-}
-
-/* Issue number prefix — "01" same weight and color as title */
-.issueNum {
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
   color: #21262a;
 }
 
-/* ── Summary text ── */
+.issueNum {
+  font-weight: 700;
+  color: #21262a;
+}
+
 .summary {
   font-family: Arial, sans-serif !important;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 21px;
-  color: var(--text\/primary, #21262a);
+  line-height: 1.5;
+  color: #5d686f;
   margin: 0;
+  padding-left: 16px;
 }
 
-/* ── Tax impact banner ── */
-.taxImpactBanner {
-  background: var(--color-container-background-attention, #ffecd9);
-  border: 1px solid var(--color-ui-attention, #c9500f);
-  border-radius: 8px;
-  padding: 16px;
-  width: 100%;
-}
-
-.taxImpactText {
-  font-family: Arial, sans-serif !important;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 21px;
-  color: var(--color-text-primary, #393a3d);
-  margin: 0;
-}
-
-.taxImpactText strong {
-  font-weight: 600;
-}
-
-/* ── Section block ── */
+/* ── Uniform section block — every section uses this ── */
 .section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
+/* Unused context card classes kept for TS compat, invisible */
+.contextCard { display: contents; }
+.contextLabel { display: none; }
+.contextBody { display: none; }
+
 .sectionTitle {
   font-family: Arial, sans-serif !important;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 21px;
-  color: var(--text\/primary, #21262a);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #8a9299;
   margin: 0;
 }
 
 .sectionBody {
   font-family: Arial, sans-serif !important;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 21px;
-  color: var(--text\/primary, #21262a);
+  line-height: 1.55;
+  color: #21262a;
   margin: 0;
 }
 
@@ -404,7 +453,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 72px 72px 64px;
+  grid-template-columns: 1fr 72px 72px 72px 52px;
   align-items: center;
   min-height: 36px;
 }
@@ -438,6 +487,36 @@
 .tableHeaderRow .cellValue {
   font-weight: 600;
 }
+
+.tableRowTotal {
+  border-top: 1px solid var(--divider\/primary, #d5dee3);
+  background: #f8f9fb;
+}
+
+.tableRowTotal .cellLabel,
+.tableRowTotal .cellValue {
+  font-weight: 700;
+}
+
+/* Delta % badge — pill, matches 1040 YoY badge style */
+.deltaBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border-radius: 100px;
+  font-family: Arial, sans-serif !important;
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.deltaBadgeRed    { background: #b3261e; }
+.deltaBadgeOrange { background: #E5A14E; }
+.deltaBadgeGrey   { background: #8a9299; }
+.deltaBadgeGreen  { background: var(--color-ui-positive, #108000); }
 
 /* ── Suggested action list ── */
 .actionList {
@@ -512,20 +591,21 @@
   margin-left: auto;
 }
 
-/* Reviewed state button — green filled, replaces "Mark as reviewed" */
+/* Reviewed state button — IDS positive, small button sizing */
 .reviewedBtn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid #1a8254;
-  border-radius: 4px;
-  background: #e6f6ef;
-  color: #1a8254;
-  font-family: Arial, sans-serif !important;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.4;
+  gap: 4px;
+  padding: var(--space-component-stack-padding-x-small, 3px) var(--space-component-inline-padding-x-small, 8px);
+  border: 1px solid var(--color-container-border-positive, #53B700);
+  border-radius: var(--radius-action, 4px);
+  background: var(--color-container-background-positive, #E5F4D9);
+  color: var(--color-ui-positive, #108000);
+  font-family: var(--font-family-component, Arial, sans-serif);
+  font-size: var(--font-size-action-x-small, 13px);
+  font-weight: var(--font-weight-component-bold, 700);
+  line-height: 16px;
+  min-height: 24px;
   cursor: default;
   flex-shrink: 0;
 }

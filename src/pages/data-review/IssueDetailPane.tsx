@@ -5,8 +5,6 @@ import '@ids-ts/button/dist/main.css'
 import sendArrow from '../../assets/send-arrow.svg'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/YoYDetailPane.module.css'
-import fieldStyles from '../../styles/data-review/DetailFields.module.css'
-
 interface IssueDetailPaneProps {
   issueKey: string
   dotColor: 'red' | 'blue'
@@ -14,7 +12,7 @@ interface IssueDetailPaneProps {
   summary: string
   taxImpact: string
   rootCause: string
-  tableRows: { label: string; scanned: string; expected: string; confidence: string }[]
+  tableRows: { label: string; cols: string[]; total?: boolean; badge?: 'red' | 'orange' | 'grey' | 'green' }[]
   tableHeaders: string[]
   suggestedActions: string[]
   viewSourceLabel: string
@@ -23,10 +21,7 @@ interface IssueDetailPaneProps {
   closing?: boolean
   reviewedFields?: Set<string>
   issueNumber?: number
-  /** If set, shows an inline edit widget for this field */
-  editableField?: string
-  editableValue?: number
-  onFieldValueChange?: (value: number) => void
+  category?: string
   onClose?: () => void
   onBack?: () => void
   onViewSource?: () => void
@@ -34,6 +29,7 @@ interface IssueDetailPaneProps {
   onPrev?: () => void
   onNext?: () => void
   totalIssues?: number
+  onOpenQuestionnaire?: () => void
 }
 
 // Mock client Q&A keyed by issueKey
@@ -76,9 +72,7 @@ export default function IssueDetailPane({
   closing = false,
   reviewedFields,
   issueNumber,
-  editableField,
-  editableValue,
-  onFieldValueChange,
+  category,
   onClose,
   onBack,
   onViewSource,
@@ -86,30 +80,10 @@ export default function IssueDetailPane({
   onPrev,
   onNext,
   totalIssues = 6,
+  onOpenQuestionnaire,
 }: IssueDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   const isReviewed = reviewedFields?.has(issueKey) ?? false
-
-  // Inline edit state
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState('')
-  const [savedInPane, setSavedInPane] = useState(false)
-  const [editedInPane, setEditedInPane] = useState(false)
-
-  const startInlineEdit = () => {
-    setDraft(editableValue?.toString() ?? '')
-    setEditing(true)
-    setSavedInPane(false)
-  }
-  const commitInlineEdit = () => {
-    const num = parseFloat(draft.replace(/,/g, '')) || 0
-    onFieldValueChange?.(num)
-    setEditing(false)
-    setEditedInPane(true)
-    setSavedInPane(true)
-    setTimeout(() => setSavedInPane(false), 3500)
-  }
-  const cancelInlineEdit = () => { setEditing(false); setDraft('') }
 
   const handleMarkReviewed = () => {
     if (!isReviewed) onMarkReviewed?.(issueKey)
@@ -165,40 +139,35 @@ export default function IssueDetailPane({
             </div>
           )}
 
-          {/* Title row */}
-          <div className={styles.titleRow}>
-            <span className={styles.dot} style={dotStyle} />
-            <span className={styles.issueTitle} style={{ flex: 1 }}>
-              {issueNumber != null && (
-                <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
-              )}
-              {title}
-            </span>
+          {/* Issue subheader */}
+          <div className={styles.issueHero}>
+            {category && <span className={styles.categoryChip}>{category}</span>}
+            <div className={styles.titleRow}>
+              <span className={styles.dot} style={dotStyle} />
+              <span className={styles.issueTitle} style={{ flex: 1 }}>
+                {issueNumber != null && (
+                  <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
+                )}
+                {title}
+              </span>
+            </div>
+            <p className={styles.summary}>{summary}</p>
           </div>
 
-          {/* Summary */}
-          <p className={styles.summary}>{summary}</p>
-
-          {/* Tax impact banner */}
-          <div className={styles.taxImpactBanner}>
-            <p className={styles.taxImpactText}>
-              <strong>Tax impact:</strong> {taxImpact}
-            </p>
-          </div>
-
-          {/* Root Cause */}
+          {/* Root cause */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>{rootCause}</p>
           </div>
 
-          {/* Client response — shown when a matching Q&A exists */}
+          {/* Client response */}
           {CLIENT_QA[issueKey] && (
             <div className={styles.section}>
               <p className={styles.sectionTitle}>Client response</p>
               <div className={styles.qaBlock}>
                 <p className={styles.qaQuestion}>
-                  <strong>Preparer asked:</strong> {CLIENT_QA[issueKey].question}
+                  <strong>Preparer asked</strong>
+                  {CLIENT_QA[issueKey].question}
                 </p>
                 <div className={styles.qaBubble}>
                   <span className={styles.qaAvatar}>JW</span>
@@ -207,34 +176,48 @@ export default function IssueDetailPane({
                     <p className={styles.qaAnswer}>{CLIENT_QA[issueKey].answer}</p>
                   </div>
                 </div>
+                <button className={styles.qaSourceLink} onClick={onOpenQuestionnaire}>
+                  From Tax Organizer · <span>View all responses</span>
+                </button>
               </div>
             </div>
           )}
 
-          {/* Details table */}
+          {/* Calculations */}
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Details</p>
-            <div className={styles.tableCard}>
-              {/* Header row */}
-              <div className={`${styles.tableRow} ${styles.tableHeaderRow}`}
-                style={{ gridTemplateColumns: `1fr repeat(${tableHeaders.length - 1}, 80px)` }}>
-                {tableHeaders.map((h, i) => (
-                  <span key={i} className={i === 0 ? styles.cellLabel : styles.cellValue}>{h}</span>
-                ))}
-              </div>
-              {tableRows.map((row, i) => (
-                <div
-                  key={row.label}
-                  className={`${styles.tableRow} ${i < tableRows.length - 1 ? styles.tableRowBorder : ''}`}
-                  style={{ gridTemplateColumns: `1fr repeat(${tableHeaders.length - 1}, 80px)` }}
-                >
-                  <span className={styles.cellLabel}>{row.label}</span>
-                  <span className={styles.cellValue}>{row.scanned}</span>
-                  <span className={styles.cellValue}>{row.expected}</span>
-                  <span className={styles.cellValue}>{row.confidence}</span>
+            <p className={styles.sectionTitle}>Calculations</p>
+            {(() => {
+              const hasBadge = tableRows.some(r => r.badge)
+              const colCount = tableHeaders.length - 1
+              const gridCols = hasBadge
+                ? `1fr repeat(${colCount - 1}, 72px) 52px`
+                : `1fr repeat(${colCount}, 80px)`
+              return (
+                <div className={styles.tableCard}>
+                  <div className={`${styles.tableRow} ${styles.tableHeaderRow}`} style={{ gridTemplateColumns: gridCols }}>
+                    {tableHeaders.map((h, i) => (
+                      <span key={i} className={i === 0 ? styles.cellLabel : styles.cellValue}>{h}</span>
+                    ))}
+                  </div>
+                  {tableRows.map((row, i) => (
+                    <div
+                      key={row.label}
+                      className={`${styles.tableRow} ${i < tableRows.length - 1 ? styles.tableRowBorder : ''} ${row.total ? styles.tableRowTotal : ''}`}
+                      style={{ gridTemplateColumns: gridCols }}
+                    >
+                      <span className={styles.cellLabel}>{row.label}</span>
+                      {row.cols.map((val, ci) => (
+                        <span key={ci} className={styles.cellValue}>
+                          {row.badge && ci === row.cols.length - 1
+                            ? <span className={`${styles.deltaBadge} ${styles[`deltaBadge${row.badge.charAt(0).toUpperCase()}${row.badge.slice(1)}`]}`}>{val}</span>
+                            : val}
+                        </span>
+                      ))}
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )
+            })()}
           </div>
 
           {/* Suggested Action */}
@@ -246,34 +229,6 @@ export default function IssueDetailPane({
               ))}
             </ul>
           </div>
-
-          {/* Inline edit widget — only shown when field is editable */}
-          {editableField && (
-            <div className={styles.section}>
-              <p className={styles.sectionTitle}>Correct this value</p>
-              <div className={styles.inlineEditRow}>
-                <input
-                  className={`${fieldStyles.fieldInput} ${fieldStyles.fieldInputSmall} ${editing ? fieldStyles.fieldInputEditing : ''}`}
-                  readOnly={!editing}
-                  value={editing ? draft : (editableValue?.toLocaleString() ?? '—')}
-                  onChange={e => setDraft(e.target.value)}
-                  autoFocus={editing}
-                  onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); commitInlineEdit() } if (e.key === 'Escape') cancelInlineEdit() }}
-                />
-                {!editing && (
-                  <button className={fieldStyles.editBtn} onClick={startInlineEdit}>Edit</button>
-                )}
-                {editing && (
-                  <div className={fieldStyles.editActions}>
-                    <button className={fieldStyles.saveBtn} onClick={commitInlineEdit}>Save</button>
-                    <button className={fieldStyles.undoBtn} onClick={cancelInlineEdit}>Undo</button>
-                  </div>
-                )}
-                {savedInPane && <span className={fieldStyles.recalcBadge}>1040 updated</span>}
-                {editedInPane && !savedInPane && <span className={fieldStyles.editedBadge}>Edited</span>}
-              </div>
-            </div>
-          )}
 
           {/* Action buttons + nav arrows in one row */}
           <div className={styles.actionButtons}>

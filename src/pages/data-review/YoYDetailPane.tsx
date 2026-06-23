@@ -18,15 +18,17 @@ interface YoYDetailPaneProps {
   /** Set of reviewed field names — used to persist reviewed state across remounts */
   reviewedFields?: Set<string>
   issueNumber?: number
+  category?: string
   onPrev?: () => void
   onNext?: () => void
   totalIssues?: number
+  onOpenQuestionnaire?: () => void
 }
 
 const TABLE_ROWS = [
-  { label: 'Bing Equipment', y2024: '$60,000',  y2023: '$82,000',  diff: '$22,000' },
-  { label: 'Tech Circle',    y2024: '$64,304',  y2023: '$63,000',  diff: '$1,304'  },
-  { label: 'Wages',          y2024: '$124,000', y2023: '$145,000', diff: '$20,735' },
+  { label: 'Bing Equipment', y2024: '$60,000',  y2023: '$82,000',  diff: '-$22,000', pct: '-27%', badge: 'red'    as const, total: false },
+  { label: 'Tech Circle',    y2024: '$64,304',  y2023: '$63,000',  diff: '+$1,304',  pct: '+2%',  badge: 'grey'   as const, total: false },
+  { label: 'Wages total',    y2024: '$124,000', y2023: '$145,000', diff: '-$20,735', pct: '-14%', badge: 'orange' as const, total: true  },
 ]
 
 // The 1040 field this finding maps to
@@ -39,7 +41,7 @@ const WAGES_QA = {
   date: 'Mar 15, 2025',
 }
 
-export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields, issueNumber, onPrev, onNext, totalIssues = 6 }: YoYDetailPaneProps) {
+export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSource, onMarkReviewed, reviewedCount = 0, totalItems = 8, closing = false, reviewedFields, issueNumber, category, onPrev, onNext, totalIssues = 6, onOpenQuestionnaire }: YoYDetailPaneProps) {
   const [inputValue, setInputValue] = useState('')
   // Derive reviewed state from parent set so it survives remounts
   const isReviewed = reviewedFields?.has(FINDING_FIELD) ?? false
@@ -96,28 +98,22 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             </div>
           )}
 
-          {/* Title row */}
-          <div className={styles.titleRow}>
-            <span className={styles.dot} />
-            <span className={styles.issueTitle} style={{ flex: 1 }}>
-              {issueNumber != null && (
-                <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
-              )}
-              Significant income drop
-            </span>
+          {/* Issue subheader */}
+          <div className={styles.issueHero}>
+            {category && <span className={styles.categoryChip}>{category}</span>}
+            <div className={styles.titleRow}>
+              <span className={styles.dot} />
+              <span className={styles.issueTitle} style={{ flex: 1 }}>
+                {issueNumber != null && (
+                  <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
+                )}
+                Significant income drop
+              </span>
+            </div>
+            <p className={styles.summary}>Wages dropped by $21.5k (-15%) vs Prior Year.</p>
           </div>
 
-          {/* Summary */}
-          <p className={styles.summary}>Wages dropped by $21.5k (-15%) vs Prior Year.</p>
-
-          {/* Tax impact banner */}
-          <div className={styles.taxImpactBanner}>
-            <p className={styles.taxImpactText}>
-              <strong>Tax impact:</strong> ~$4,600 lower tax liability from the $20.7k wage drop (lower taxable income)
-            </p>
-          </div>
-
-          {/* Root Cause */}
+          {/* Root cause */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>
@@ -130,7 +126,8 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
             <p className={styles.sectionTitle}>Client response</p>
             <div className={styles.qaBlock}>
               <p className={styles.qaQuestion}>
-                <strong>Preparer asked:</strong> {WAGES_QA.question}
+                <strong>Preparer asked</strong>
+                {WAGES_QA.question}
               </p>
               <div className={styles.qaBubble}>
                 <span className={styles.qaAvatar}>JW</span>
@@ -139,27 +136,34 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                   <p className={styles.qaAnswer}>{WAGES_QA.answer}</p>
                 </div>
               </div>
+              <button className={styles.qaSourceLink} onClick={onOpenQuestionnaire}>
+                From Tax Organizer · <span>View all responses</span>
+              </button>
             </div>
           </div>
 
-          {/* Details table */}
+          {/* Calculations */}
           <div className={styles.section}>
-            <p className={styles.sectionTitle}>Details</p>
+            <p className={styles.sectionTitle}>Calculations</p>
             <div className={styles.tableCard}>
               {/* Header row */}
               <div className={`${styles.tableRow} ${styles.tableHeaderRow}`}>
                 <span className={styles.cellLabel} />
                 <span className={styles.cellValue}>2024</span>
                 <span className={styles.cellValue}>2023</span>
-                <span className={styles.cellValue}>Diff</span>
+                <span className={styles.cellValue}>Change</span>
+                <span className={styles.cellValue} />
               </div>
               {/* Data rows */}
               {TABLE_ROWS.map((row, i) => (
-                <div key={row.label} className={`${styles.tableRow} ${i < TABLE_ROWS.length - 1 ? styles.tableRowBorder : ''}`}>
+                <div key={row.label} className={`${styles.tableRow} ${i < TABLE_ROWS.length - 1 ? styles.tableRowBorder : ''} ${row.total ? styles.tableRowTotal : ''}`}>
                   <span className={styles.cellLabel}>{row.label}</span>
                   <span className={styles.cellValue}>{row.y2024}</span>
                   <span className={styles.cellValue}>{row.y2023}</span>
                   <span className={styles.cellValue}>{row.diff}</span>
+                  <span className={styles.cellValue}>
+                    <span className={`${styles.deltaBadge} ${styles[`deltaBadge${row.badge.charAt(0).toUpperCase()}${row.badge.slice(1)}`]}`}>{row.pct}</span>
+                  </span>
                 </div>
               ))}
             </div>
