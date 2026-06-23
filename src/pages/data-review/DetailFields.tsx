@@ -19,6 +19,8 @@ interface DetailFieldsProps {
   onFieldValueChange?: (key: FieldValuesKey, value: number) => void
   onMarkReviewed?: (field: string) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  /** Map of doc field key → issue summary shown as a hover tooltip */
+  flaggedFields?: Record<string, string>
 }
 
 // Static non-wages fields per employer
@@ -63,6 +65,7 @@ export default function DetailFields({
   onFieldValueChange,
   onMarkReviewed,
   reviewedFields,
+  flaggedFields = {},
 }: DetailFieldsProps) {
   const employer = EMPLOYER_DATA[activeSubTab]
   const currentWages = wages[activeSubTab]
@@ -126,6 +129,20 @@ export default function DetailFields({
     setOriginalValue('')
   }
 
+  // Renders label text with an orange dot + tooltip when the field is flagged by an AI issue
+  const FlaggedLabel = ({ fieldKey, children }: { fieldKey: string; children: string }) => {
+    const issue = flaggedFields[fieldKey]
+    if (!issue) return <span className={styles.fieldLabel}>{children}</span>
+    return (
+      <Tooltip text={issue} placement="right">
+        <span className={`${styles.fieldLabel} ${styles.fieldLabelFlagged}`}>
+          <span className={styles.issueIndicator} />
+          {children}
+        </span>
+      </Tooltip>
+    )
+  }
+
   return (
     <div className={styles.container}>
       {/* Page header */}
@@ -179,7 +196,7 @@ export default function DetailFields({
           onClick={() => onFieldSelect?.(selectedField === 'wages' ? null : 'wages')}
           style={{ cursor: 'pointer' }}
         >
-          <span className={styles.fieldLabel}>(1) Wages, tips, etc.</span>
+          <FlaggedLabel fieldKey="wages">(1) Wages, tips, etc.</FlaggedLabel>
           <input
             className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'wages' ? styles.fieldInputEditing : selectedField === 'wages' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={editingField !== 'wages'}
@@ -217,7 +234,7 @@ export default function DetailFields({
           onClick={() => onFieldSelect?.(selectedField === 'withholding' ? null : 'withholding')}
           style={{ cursor: 'pointer' }}
         >
-          <span className={styles.fieldLabel}>(2) Federal income tax withheld</span>
+          <FlaggedLabel fieldKey="withholding">(2) Federal income tax withheld</FlaggedLabel>
           <input
             className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'withholding' ? styles.fieldInputEditing : selectedField === 'withholding' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={editingField !== 'withholding'}
@@ -283,7 +300,7 @@ export default function DetailFields({
           onClick={() => onFieldSelect?.(selectedField === 'box12' ? null : 'box12')}
           style={{ cursor: 'pointer' }}
         >
-          <span className={styles.fieldLabel}>(12) Code {employer.box12Code || '—'} — 401(k) deferral</span>
+          <FlaggedLabel fieldKey="box12">(12) Code {employer.box12Code || '—'} — 401(k) deferral</FlaggedLabel>
           <input
             className={`${styles.fieldInput} ${styles.fieldInputSmall} ${editingField === 'box12' ? styles.fieldInputEditing : selectedField === 'box12' ? (highlightMode === 'orange' ? styles.fieldInputHighlightedOrange : styles.fieldInputHighlighted) : ''}`}
             readOnly={editingField !== 'box12'}

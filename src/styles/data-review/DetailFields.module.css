@@ -205,6 +205,24 @@
   text-overflow: ellipsis;
 }
 
+/* Flagged label — shown when the AI has an issue for this field */
+.fieldLabelFlagged {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+
+/* Orange dot indicator on flagged field labels */
+.issueIndicator {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #c9500f;
+  flex-shrink: 0;
+}
+
 /* Input field — 300px, 36px height, border #859299 */
 .fieldInput {
   font-family: Arial, sans-serif !important;

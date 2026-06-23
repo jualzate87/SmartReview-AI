@@ -504,6 +504,14 @@ export default function DataReviewPage() {
                   }}
                   onMarkReviewed={handleMarkReviewed}
                   reviewedFields={reviewedFields}
+                  flaggedFields={{
+                    ...(activeSubTab === 'bingEquipment' && !reviewedFields.has('wages')
+                      ? { wages: 'Significant income drop — Wages fell $21.5k (-15%) vs. prior year. Bing Equipment W-2 shows $60k vs $82k prior year.' }
+                      : {}),
+                    ...(activeSubTab === 'techCircle' && !reviewedFields.has('box12')
+                      ? { box12: 'Low scan confidence (68%) on Box 12 Code D — 401(k) deferral amount of $5,000 may be misread.' }
+                      : {}),
+                  }}
                 />
               )}
               {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
