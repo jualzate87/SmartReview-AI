@@ -55,7 +55,7 @@
 
 /* Title — Regular weight, not Demi */
 .headerTitle {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: var(--font-size-heading-5, 24px);
   font-weight: 400;
   line-height: 1.3;
@@ -97,6 +97,7 @@
   height: 24px;
 }
 
+/* Red badge on Notes button in header */
 .notesBadge {
   position: absolute;
   top: -4px;
@@ -187,7 +188,10 @@
 
 /* Back to agent insights link — shown in right panel when navigated from agent */
 .agentBackLink {
-  padding: 8px 16px 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 4px 16px;
   flex-shrink: 0;
 }
 
@@ -195,9 +199,9 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 16px;
   color: #0365ac;
   padding: 0;
@@ -206,3 +210,87 @@
   gap: 4px;
 }
 .agentBackBtn:hover { text-decoration: underline; }
+
+.agentPopOutBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #5d686f;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.agentPopOutBtn:hover {
+  background: #f0f4f7;
+  color: #21262a;
+}
+
+/* Source document panel header — Prototype A */
+.sourcePanelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 8px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #e8edf0;
+}
+
+.sourcePanelTitle {
+  font-family: var(--font-family-component) !important;
+  font-size: 16px;
+  font-weight: 500;
+  color: #21262a;
+}
+
+/* Issue banner — shown below the panel header, above the tabs */
+.issueBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 16px 6px;
+  padding: 10px 14px;
+  border: 1px solid #ff6a00;
+  border-radius: 8px;
+  background: rgba(255, 187, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.issueBannerIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #cc5500;
+}
+
+.issueBannerText {
+  font-family: var(--font-family-component) !important;
+  font-size: 13px;
+  font-weight: 500;
+  color: #393a3d;
+  flex: 1;
+}
+
+.issueBannerPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: #ff6a00;
+  color: #fff;
+  font-family: var(--font-family-component) !important;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  flex-shrink: 0;
+}
+.issueBannerPill:hover {
+  background: #e05500;
+}

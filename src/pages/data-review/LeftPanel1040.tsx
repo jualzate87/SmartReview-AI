@@ -1,7 +1,10 @@
-import { useState } from 'react'
-import { CircleCheck } from '@design-systems/icons'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { CircleCheck, Comment } from '@design-systems/icons'
 import FieldPopover, { FIELD_META } from './FieldPopover'
+import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/LeftPanel1040.module.css'
+
 
 interface LeftPanel1040Props {
   selectedField?: string | null
@@ -21,10 +24,11 @@ interface LeftPanel1040Props {
   onViewSource?: (fieldName: string, sourceLabel?: string) => void
   /** Live editable field values from source-doc entry sheets */
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
+  /** Called when user posts a comment from a 1040 field */
+  onAddFieldNote?: (text: string, context: string) => void
 }
 
 // YoY % changes — absolute value drives color, sign drives label
-// Only fields that appear in the YoY analysis card in the agent panel
 const YOY: Record<string, number> = {
   wages:           -15,
   taxableInterest: +42,
@@ -38,17 +42,16 @@ const YOY: Record<string, number> = {
 }
 
 // Estimated tax dollar impact per field (at ~22% marginal rate for Jordan's bracket)
-// Used to enforce the >$500 tax impact threshold for row tinting
 const YOY_TAX_IMPACT: Record<string, number> = {
-  wages:           (124265 * 0.15) * 0.22,  // ~15% drop on $124k wages → ~$4,100 tax impact
-  taxableInterest: (4535  * 0.42) * 0.22,   // +42% on $4,535 → ~$418 — borderline; included (close enough)
-  qualifiedDivs:   (45    * 0.63) * 0.15,   // -63% on $45 qualif. divs → ~$4 — far below threshold
-  ordinaryDivs:    (531   * 0.11) * 0.22,   // +11% on $531 → ~$13 — below threshold
-  capitalGain:     (602   * 1.50) * 0.15,   // +150% on $602 → ~$135 — below threshold
-  totalIncome:     (134472 * 0.12) * 0.22,  // -12% on total income → ~$3,550 tax impact
+  wages:           (124265 * 0.15) * 0.22,
+  taxableInterest: (4535  * 0.42) * 0.22,
+  qualifiedDivs:   (45    * 0.63) * 0.15,
+  ordinaryDivs:    (531   * 0.11) * 0.22,
+  capitalGain:     (602   * 1.50) * 0.15,
+  totalIncome:     (134472 * 0.12) * 0.22,
   agi:             (134472 * 0.12) * 0.22,
-  stdDeduction:    (14600 * 0.05) * 0.22,   // +5% on std deduction → ~$161 — below threshold
-  taxableIncome:   (119872 * 0.14) * 0.22,  // -14% on taxable income → ~$3,695 tax impact
+  stdDeduction:    (14600 * 0.05) * 0.22,
+  taxableIncome:   (119872 * 0.14) * 0.22,
 }
 
 // Threshold: >=15% change AND >$300 estimated tax impact
@@ -90,8 +93,9 @@ export default function LeftPanel1040({
   issueField,
   onViewSource,
   fieldValues,
+  onAddFieldNote,
 }: LeftPanel1040Props) {
-  // Derived 1040 values — recalculate when source-doc fields change
+  // Derived 1040 values — Jordan Wells' return (TY 2025)
   const taxableInterest = fieldValues?.taxableInterest ?? 4535
   const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 45
   const withholding1040 = fieldValues?.withholding      ?? 19800
@@ -104,6 +108,36 @@ export default function LeftPanel1040({
   const [popoverRect, setPopoverRect]   = useState<DOMRect | null>(null)
   // Which field row is hovered (for showing the check button)
   const [hoveredField, setHoveredField] = useState<string | null>(null)
+  // Comment popover
+  const [commentField, setCommentField] = useState<string | null>(null)
+  const [commentDraft, setCommentDraft] = useState('')
+  const [commentAnchor, setCommentAnchor] = useState<{ top: number; right: number } | null>(null)
+  const commentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!commentField) return
+    const onDown = (e: MouseEvent) => {
+      if (commentRef.current && !commentRef.current.contains(e.target as Node)) {
+        setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [commentField])
+
+  const openComment1040 = (fieldKey: string, label: string, btn: HTMLElement) => {
+    const row = btn.closest('tr') as HTMLElement | null
+    const rect = (row ?? btn).getBoundingClientRect()
+    setCommentAnchor({ top: rect.top, right: 8 })
+    setCommentField(fieldKey)
+    setCommentDraft('')
+  }
+
+  const postComment1040 = (context: string) => {
+    if (!commentDraft.trim()) return
+    onAddFieldNote?.(commentDraft.trim(), context)
+    setCommentField(null); setCommentDraft(''); setCommentAnchor(null)
+  }
 
   const handleRowClick = (field: string, e: React.MouseEvent<HTMLTableRowElement>) => {
     // If the field is the active issue field, just toggle selection (orange mode)
@@ -181,6 +215,7 @@ export default function LeftPanel1040({
     subdued?: boolean
     owe?: boolean
   }) => {
+    const commentable = !!field && !!onAddFieldNote
     const isIssueHighlight = !!field && field === issueField
     const isSelected       = !!field && selectedField === field
     const isReviewed       = !!field && reviewedFields.has(field)
@@ -213,8 +248,10 @@ export default function LeftPanel1040({
       isChecked && !isReviewed ? styles.rowChecked : '',
       showYoyTint      ? rowYoyClass(yoy!)      : '',
       clickable        ? styles.rowClickable    : '',
+      commentField === field ? styles.rowCommentOpen : '',
     ].filter(Boolean).join(' ')
 
+    const isCommentOpen = commentField === field
     const valueCellCls = [
       styles.valueBox,
       kind === 'source'   ? styles.valueBoxSource   : '',
@@ -224,6 +261,7 @@ export default function LeftPanel1040({
       isBlueSelected      ? styles.valueBoxSelectedBlue : '',
       isReviewed && !isSelected ? styles.valueBoxReviewed : '',
       isChecked && !isReviewed && !isSelected ? styles.valueBoxChecked : '',
+      isCommentOpen && !isSelected ? styles.valueBoxCommentOpen : '',
     ].filter(Boolean).join(' ')
 
     const valueNumCls = [
@@ -251,51 +289,57 @@ export default function LeftPanel1040({
         </td>
         <td className={styles.cellLineRight}>{line}</td>
         <td className={styles.cellValue}>
-          <div className={valueCellCls}>
-            {/* Reviewed check icon (AI review) — left side of value box */}
-            {isReviewed && (
-              <span className={styles.reviewedIcon}><CircleCheck size="small" /></span>
+          <div className={styles.cellValueInner}>
+            <div className={valueCellCls}>
+              {/* Reviewed check icon (AI review) — left side of value box */}
+              {isReviewed && (
+                <span className={styles.reviewedIcon}><CircleCheck size="small" /></span>
+              )}
+
+              {/* The value number */}
+              {value !== undefined && (
+                <span className={valueNumCls}>
+                  {typeof value === 'number' ? fmt(value) : value}
+                </span>
+              )}
+
+              {/* YoY badge — show on all fields with YoY data */}
+              {yoyExpanded && yoy !== undefined && !!field && (
+                <span className={`${styles.badge} ${badgeColor(yoy)}`}>
+                  {yoy > 0 ? `+${yoy}%` : `${yoy}%`}
+                </span>
+              )}
+            </div>
+
+            {/* Check button — outside value box, shown on hover */}
+            {showCheckBtn && !isReviewed && (
+              <Tooltip text={isChecked ? 'Unmark as correct' : 'Mark as correct'} placement="top"><button
+                className={`${styles.checkBtn} ${isChecked ? styles.checkBtnActive : ''}`}
+                aria-label={isChecked ? `Unmark ${field} as verified` : `Mark ${field} as verified`}
+                onClick={(e) => { e.stopPropagation(); onToggleChecked?.(field!) }}
+              >
+                <CircleCheck size="small" />
+              </button></Tooltip>
             )}
 
-            {/* Manual check icon (preparer verified) */}
-            {isChecked && !isReviewed && (
+            {/* Static check icon when checked but not hovered */}
+            {isChecked && !isReviewed && !isHovered && (
               <span className={styles.checkedIcon}><CircleCheck size="small" /></span>
             )}
 
-            {/* Hover check button — appears on hover for checkable fields */}
-            {showCheckBtn && !isChecked && !isReviewed && (
-              <button
-                className={styles.checkBtn}
-                aria-label={`Mark ${field} as verified`}
-                onClick={(e) => { e.stopPropagation(); onToggleChecked?.(field!) }}
+            {/* Comment button — outside value box, shown on hover */}
+            {commentable && (isHovered || commentField === field) && (
+              <Tooltip text="Add a comment" placement="top"><button
+                className={`${styles.commentBtn1040} ${commentField === field ? styles.commentBtn1040Active : ''}`}
+                aria-label={`Add comment for ${label}`}
+                onClick={e => {
+                  e.stopPropagation()
+                  if (commentField === field) { setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }
+                  else openComment1040(field!, label, e.currentTarget)
+                }}
               >
-                <CircleCheck size="small" />
-              </button>
-            )}
-
-            {/* Uncheck button — visible when checked, on hover */}
-            {showCheckBtn && isChecked && !isReviewed && (
-              <button
-                className={`${styles.checkBtn} ${styles.checkBtnActive}`}
-                aria-label={`Unmark ${field} as verified`}
-                onClick={(e) => { e.stopPropagation(); onToggleChecked?.(field!) }}
-              >
-                <CircleCheck size="small" />
-              </button>
-            )}
-
-            {/* The value number */}
-            {value !== undefined && (
-              <span className={valueNumCls}>
-                {typeof value === 'number' ? fmt(value) : value}
-              </span>
-            )}
-
-            {/* YoY badge — show on all fields with YoY data */}
-            {yoyExpanded && yoy !== undefined && !!field && (
-              <span className={`${styles.badge} ${badgeColor(yoy)}`}>
-                {yoy > 0 ? `+${yoy}%` : `${yoy}%`}
-              </span>
+                <Comment size="small" />
+              </button></Tooltip>
             )}
           </div>
         </td>
@@ -338,15 +382,15 @@ export default function LeftPanel1040({
             <div className={styles.infoRow}>
               <div className={styles.infoField} style={{ flex: 2 }}>
                 <span className={styles.infoLabel}>Your first name and middle initial</span>
-                <span className={styles.infoValue}>Jordan</span>
+                <span className={styles.infoValue}>Jessica</span>
               </div>
               <div className={styles.infoField} style={{ flex: 2 }}>
                 <span className={styles.infoLabel}>Last name</span>
-                <span className={styles.infoValue}>Wells</span>
+                <span className={styles.infoValue}>Drake</span>
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Your social security number</span>
-                <span className={styles.infoValue}>111-11-1111</span>
+                <span className={styles.infoValue}>400-01-4699</span>
               </div>
             </div>
             <div className={styles.infoRow}>
@@ -400,14 +444,15 @@ export default function LeftPanel1040({
               <Row field="wages"           line="1a" label="Total amount from Form(s) W-2, box 1"                          kind="source" value={total1a} />
               <Row                         line="1b" label="Household employee wages not reported on Form(s) W-2"          subdued />
               <Row                         line="1c" label="Tip income not reported on line 1a"                            subdued />
-              <Row                         line="1d" label="Medicaid waiver payments not reported on Form(s) W-2"         kind="source" value={45}     subdued />
+              <Row                         line="1d" label="Medicaid waiver payments not reported on Form(s) W-2"          kind="source" value={45} />
               <Row                         line="1z" label="Add lines 1a through 1h"                                       kind="calc"   value={total1a} bold />
 
-              <Row field="taxableInterest" line="2b" label="Taxable interest"                                              kind="source" value={taxableInterest} />
+              <Row field="taxExemptInterest" line="2a" label="Tax-exempt interest"                                          kind="source" value={234} />
+              <Row field="taxableInterest"  line="2b" label="Taxable interest"                                             kind="source" value={taxableInterest} />
               <Row field="qualifiedDivs"   line="3a" label="Qualified dividends"                                           kind="source" value={qualifiedDivs} />
               <Row field="ordinaryDivs"    line="3b" label="Ordinary dividends"                                            kind="source" value={531} />
               <Row field="capitalGain"     line="7"  label="Capital gain or (loss)"                                        kind="source" value={602} />
-              <Row                         line="8"  label="Additional income from Schedule 1, line 10"                   kind="source" value={4539} />
+              <Row field="additionalIncome" line="8" label="Additional income from Schedule 1, line 10"                   kind="source" value={4539} />
 
               <Divider />
               <Row field="totalIncome"     line="9"  label="Total income. Add lines 1z, 2b, 3b, 4b, 5b, 6b, 7, and 8"   kind="calc"   value={totalIncome} bold />
@@ -423,17 +468,17 @@ export default function LeftPanel1040({
               <Row field="taxableIncome"   line="15" label="Taxable income"                                                kind="calc"   value={taxableIncome} bold shaded />
 
               <Section title="Tax and Credits" />
-              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={Math.round(taxableIncome * 0.2018)} bold />
-              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={Math.round(taxableIncome * 0.2018)} bold />
+              <Row                         line="16" label="Tax (see instructions)"                                        kind="calc"   value={24191} bold />
+              <Row                         line="24" label="Total tax"                                                     kind="calc"   value={24191} bold />
 
               <Section title="Payments" />
-              <Row field="withholding"      line="25a" label="Federal income tax withheld from Form(s) W-2"                kind="source" value={withholding1040} />
+              <Row field="withholding"     line="25a" label="Federal income tax withheld from Form(s) W-2"                kind="source" value={withholding1040} />
               <Row                         line="33"  label="Total payments"                                               kind="calc"   value={withholding1040} bold />
 
               <tr className={styles.oweDividerRow}>
                 <td colSpan={4} />
               </tr>
-              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={Math.round(taxableIncome * 0.2018) - withholding1040} bold owe />
+              <Row                         line="37" label="Amount you owe. Subtract line 33 from line 24"                kind="calc"   value={Math.max(0, 24191 - withholding1040)} bold owe />
             </tbody>
           </table>
 
@@ -452,6 +497,51 @@ export default function LeftPanel1040({
             onViewSource?.(fieldName, sourceLabel)
           }}
         />
+      )}
+
+      {/* ── Comment popover (portal) ── */}
+      {commentField && commentAnchor && createPortal(
+        <div
+          className={styles.commentPopover1040}
+          style={{ top: commentAnchor.top - 4, right: commentAnchor.right, transform: 'translateY(-100%)' }}
+          ref={commentRef}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className={styles.commentPopoverCtx}>
+            <span className={styles.commentPopoverChip}>
+              Form 1040 · {FIELD_META[commentField]?.label ?? commentField}
+            </span>
+          </div>
+          <textarea
+            autoFocus
+            className={styles.commentPopoverInput}
+            placeholder="Add a comment…"
+            value={commentDraft}
+            onChange={e => setCommentDraft(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey))
+                postComment1040(`Form 1040 · ${FIELD_META[commentField]?.label ?? commentField}`)
+            }}
+            rows={3}
+          />
+          <div className={styles.commentPopoverActions}>
+            <button className={styles.commentPopoverCancel}
+              onClick={e => { e.stopPropagation(); setCommentField(null); setCommentDraft(''); setCommentAnchor(null) }}>
+              Cancel
+            </button>
+            <button
+              className={`${styles.commentPopoverPost} ${commentDraft.trim() ? styles.commentPopoverPostActive : ''}`}
+              disabled={!commentDraft.trim()}
+              onClick={e => {
+                e.stopPropagation()
+                postComment1040(`Form 1040 · ${FIELD_META[commentField]?.label ?? commentField}`)
+              }}
+            >
+              Post
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   )
