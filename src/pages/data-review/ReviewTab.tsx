@@ -7,11 +7,14 @@ const TABS = [
   { label: '1099-DIVs', key: '1099-divs' as const },
   { label: '1099-INTs', key: '1099-ints' as const },
   { label: 'Schedule K-1', key: 'k1' as const },
+  { label: 'Prior Year 1040', key: 'prior-1040' as const },
 ]
+
+export type TopTab = 'w2s' | '1099-divs' | '1099-ints' | 'k1' | 'prior-1040'
 
 interface ReviewTabProps {
   activeTopTab?: string
-  onTopTabChange?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1') => void
+  onTopTabChange?: (tab: TopTab) => void
   onTabChange?: (tab: string) => void
   onPopOut?: () => void
   isPopout?: boolean
@@ -20,8 +23,8 @@ interface ReviewTabProps {
 export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabChange, onPopOut, isPopout = false }: ReviewTabProps) {
 
   const handleTabClick = (key: string, label: string) => {
-    if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === 'k1') {
-      onTopTabChange?.(key)
+    if (key === 'w2s' || key === '1099-divs' || key === '1099-ints' || key === 'k1' || key === 'prior-1040') {
+      onTopTabChange?.(key as TopTab)
     }
     onTabChange?.(label)
   }

@@ -1,7 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ArrowLeft, DotsSix, Panel, ChevronLeft } from '@design-systems/icons'
+import { ArrowLeft, DotsSix, Panel, ChevronLeft, Comment } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
+import NotesPane from './data-review/NotesPane'
+import type { Note } from './data-review/NotesPane'
+import PriorYear1040Panel from './data-review/PriorYear1040Panel'
 
 function VerticalGripIcon() {
   return (
@@ -15,6 +18,7 @@ function VerticalGripIcon() {
 import intuitAssistIcon from '../assets/icons/intuit-assist.svg'
 import LeftPanel1040 from './data-review/LeftPanel1040'
 import ReviewTab from './data-review/ReviewTab'
+import type { TopTab } from './data-review/ReviewTab'
 import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
 import DetailFields1099 from './data-review/DetailFields1099'
@@ -33,8 +37,8 @@ import dragStyles from '../styles/data-review/DragHandle.module.css'
 export default function DataReviewPage() {
   // Selected field for cross-document highlighting
   const [selectedField, setSelectedField] = useState<string | null>(null)
-  // Active top tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1'
-  const [activeTopTab, setActiveTopTab] = useState<'w2s' | '1099-divs' | '1099-ints' | 'k1'>('w2s')
+  // Active top tab
+  const [activeTopTab, setActiveTopTab] = useState<TopTab>('w2s')
   // Active W-2 sub-tab: 'bingEquipment' | 'techCircle'
   const [activeSubTab, setActiveSubTab] = useState<'bingEquipment' | 'techCircle'>('bingEquipment')
   // W-2 wages — drives 1040 line 1a dynamically
@@ -79,6 +83,10 @@ export default function DataReviewPage() {
   const [reviewedFields, setReviewedFields] = useState<Map<string, { by: string; at: string }>>(new Map())
   // Set of 1040 field names manually checked off by the preparer (independent of AI review)
   const [checkedFields, setCheckedFields] = useState<Set<string>>(new Set())
+  // Notes / comments
+  const [notes, setNotes] = useState<Note[]>([])
+  const [notesOpen, setNotesOpen] = useState(false)
+  const [notesClosing, setNotesClosing] = useState(false)
 
   const handleToggleChecked = (fieldName: string) => {
     setCheckedFields(prev => {
@@ -164,6 +172,18 @@ export default function DataReviewPage() {
   }
 
   const PREPARER_NAME = 'Juan Alzate'
+
+  const handleOpenNotes = () => setNotesOpen(true)
+  const handleCloseNotes = () => {
+    setNotesClosing(true)
+    setTimeout(() => { setNotesOpen(false); setNotesClosing(false) }, 200)
+  }
+  const handleAddNote = (text: string, context?: string) => {
+    const now = new Date()
+    const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+    setNotes(prev => [...prev, { id: `note-${Date.now()}`, text, author: PREPARER_NAME, at, context }])
+    setNotesOpen(true)
+  }
 
   const handleMarkReviewed = (fieldName: string) => {
     const now = new Date()
@@ -300,6 +320,17 @@ export default function DataReviewPage() {
         </div>
         <div className={styles.headerRight}>
 
+          <button
+            className={`${styles.intuitIntelBtn} ${notesOpen ? styles.intuitIntelBtnActive : ''}`}
+            aria-label="Comments and flags"
+            style={{ position: 'relative' }}
+            onClick={notesOpen ? handleCloseNotes : handleOpenNotes}
+          >
+            <Comment size="medium" />
+            {notes.length > 0 && (
+              <span className={styles.notesBadge}>{notes.length}</span>
+            )}
+          </button>
           <button
             className={`${styles.intuitIntelBtn} ${rightPanelVisible && agentView === 'idle' ? styles.intuitIntelBtnActive : ''}`}
             aria-label="Toggle panel"
@@ -448,8 +479,8 @@ export default function DataReviewPage() {
                 }}
               />
 
-              {/* Document preview — switches based on active tab */}
-              <div style={{ height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden' }}>
+              {/* Document preview + detail fields (hidden when prior-1040 tab active) */}
+              {activeTopTab !== 'prior-1040' && <div style={{ height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden' }}>
                 <DocumentPreview
                   imageSrc={
                     activeTopTab === '1099-ints' ? img1099Int :
@@ -472,8 +503,9 @@ export default function DataReviewPage() {
                     'w2'
                   }
                 />
-              </div>
+              </div>}
 
+              {activeTopTab !== 'prior-1040' && <>
               {/* Up/down drag handle */}
               <div className={dragStyles.handleHorizontal} onMouseDown={handleVerticalDrag}>
                 <DotsSix size="small" className={`${dragStyles.handleIcon} ${dragStyles.rotated90}`} />
@@ -517,6 +549,8 @@ export default function DataReviewPage() {
               {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
               {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
               {activeTopTab === 'k1' && <DetailFieldsK1 />}
+              </>}
+              {activeTopTab === 'prior-1040' && <PriorYear1040Panel />}
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}
@@ -602,6 +636,16 @@ export default function DataReviewPage() {
           </>
         )}
       </div>
+
+      {/* Notes / Comments pane — page-level overlay */}
+      {(notesOpen || notesClosing) && (
+        <NotesPane
+          notes={notes}
+          onAdd={(text) => handleAddNote(text)}
+          onClose={handleCloseNotes}
+          closing={notesClosing}
+        />
+      )}
     </div>
   )
 }
