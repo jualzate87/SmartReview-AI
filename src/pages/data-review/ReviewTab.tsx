@@ -3,11 +3,11 @@ import sparklesIcon from '../../assets/icons/sparkles.svg'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
 const TABS = [
+  { label: 'Prior Year 1040', key: 'prior-1040' as const },
   { label: 'W-2s', key: 'w2s' as const },
   { label: '1099-DIVs', key: '1099-divs' as const },
   { label: '1099-INTs', key: '1099-ints' as const },
   { label: 'Schedule K-1', key: 'k1' as const },
-  { label: 'Prior Year 1040', key: 'prior-1040' as const },
 ]
 
 export type TopTab = 'w2s' | '1099-divs' | '1099-ints' | 'k1' | 'prior-1040'

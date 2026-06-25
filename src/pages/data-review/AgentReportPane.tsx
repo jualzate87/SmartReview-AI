@@ -37,7 +37,7 @@ interface AgentReportPaneProps {
   embedded?: boolean
   total1a?: number
   wages?: { bingEquipment: number; techCircle: number }
-  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1', subTab?: 'bingEquipment' | 'techCircle', field?: string) => void
+  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1' | 'prior-1040', subTab?: 'bingEquipment' | 'techCircle', field?: string) => void
   /** Highlight a 1040 field without leaving the agent panel */
   onHighlightField?: (field: string | null) => void
   /** Live field values for inline editing */
@@ -382,6 +382,16 @@ export default function AgentReportPane({
                     <span className={styles.docConfidenceInfo} title="Scan confidence score">ⓘ</span>
                   </span>
                 </div>
+                <button className={styles.docRow} onClick={() => onNavigateToTab?.('prior-1040')}>
+                  <div className={styles.docRowLeft}>
+                    <div className={styles.docFileIcon}><Document size="medium" /></div>
+                    <div className={styles.docMeta}>
+                      <span className={styles.docName}>1040-PriorYear-2024.pdf</span>
+                      <span className={styles.docSub}>Form 1040 · 2 pages</span>
+                    </div>
+                  </div>
+                  <span className={styles.confidenceBadge} data-level="high">100%</span>
+                </button>
                 <button className={styles.docRow} onClick={() => onNavigateToTab?.('w2s', 'bingEquipment')}>
                   <div className={styles.docRowLeft}>
                     <div className={styles.docFileIcon}><Document size="medium" /></div>

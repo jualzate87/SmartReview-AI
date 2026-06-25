@@ -37,8 +37,8 @@ import dragStyles from '../styles/data-review/DragHandle.module.css'
 export default function DataReviewPage() {
   // Selected field for cross-document highlighting
   const [selectedField, setSelectedField] = useState<string | null>(null)
-  // Active top tab
-  const [activeTopTab, setActiveTopTab] = useState<TopTab>('w2s')
+  // Active top tab — Prior Year 1040 is first
+  const [activeTopTab, setActiveTopTab] = useState<TopTab>('prior-1040')
   // Active W-2 sub-tab: 'bingEquipment' | 'techCircle'
   const [activeSubTab, setActiveSubTab] = useState<'bingEquipment' | 'techCircle'>('bingEquipment')
   // W-2 wages — drives 1040 line 1a dynamically
