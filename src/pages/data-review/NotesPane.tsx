@@ -46,7 +46,7 @@ export default function NotesPane({ notes, onAdd, onClose, closing = false }: No
 
       {/* Header */}
       <div className={styles.header}>
-        <span className={styles.title}>Comments &amp; flags</span>
+        <span className={styles.title}>Comments</span>
         <button className={styles.closeBtn} aria-label="Close comments" onClick={onClose}>
           <Close size="small" />
         </button>
@@ -64,8 +64,8 @@ export default function NotesPane({ notes, onAdd, onClose, closing = false }: No
                 <line x1="10" y1="19" x2="17" y2="19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-            <p className={styles.emptyTitle}>No notes yet</p>
-            <p className={styles.emptyBody}>Add a note to flag something for your team or leave context for a reviewer.</p>
+            <p className={styles.emptyTitle}>No comments yet</p>
+            <p className={styles.emptyBody}>Add a comment to flag something for your team or leave context for a reviewer.</p>
           </div>
         ) : (
           <div className={styles.noteItems}>

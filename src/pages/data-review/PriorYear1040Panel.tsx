@@ -7,6 +7,7 @@ import dragStyles from '../../styles/data-review/DragHandle.module.css'
 
 const ZOOM_LEVELS = [50, 60, 65, 70, 75, 85, 100, 125, 150, 200]
 
+// Values from the actual 2024 1040 source document
 const PRIOR_YEAR_FIELDS: { line: string; label: string; amount: string; bold?: boolean; section?: string }[] = [
   { section: 'INCOME' },
   { line: '1a',  label: 'Total wages, salaries, tips (W-2)',        amount: '105,000' },

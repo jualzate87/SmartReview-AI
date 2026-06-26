@@ -26,18 +26,18 @@ interface YoYDetailPaneProps {
 }
 
 const TABLE_ROWS = [
-  { label: 'Bing Equipment', y2024: '$60,000',  y2023: '$82,000',  diff: '-$22,000', pct: '-27%', badge: 'red'    as const, total: false },
-  { label: 'Tech Circle',    y2024: '$64,304',  y2023: '$63,000',  diff: '+$1,304',  pct: '+2%',  badge: 'grey'   as const, total: false },
-  { label: 'Wages total',    y2024: '$124,000', y2023: '$145,000', diff: '-$20,735', pct: '-14%', badge: 'orange' as const, total: true  },
+  { label: 'Bing Equipment', y2024: '$60,000',  y2023: '$82,000',  diff: '-$22,000', pct: '-27%', badge: 'orange' as const, total: false },
+  { label: 'Tech Circle',    y2024: '$64,304',  y2023: '$23,000',  diff: '+$41,304', pct: '+180%', badge: 'red'   as const, total: false },
+  { label: 'Wages total',    y2024: '$124,304', y2023: '$105,000', diff: '+$19,304', pct: '+18%',  badge: 'orange' as const, total: true  },
 ]
 
 // The 1040 field this finding maps to
 const FINDING_FIELD = 'wages'
 
-// Client Q&A for the wages/income drop finding
+// Client Q&A for the wages YoY finding
 const WAGES_QA = {
-  question: 'Your W-2 wages dropped by about $21k compared to last year. Can you explain the change in income?',
-  answer: 'Yes — I left Bing Equipment in June 2024, so I only worked there for half the year. My Tech Circle salary stayed the same. The drop makes sense.',
+  question: 'Your W-2 wages increased by about $19k compared to last year. Can you explain the change in income from Tech Circle?',
+  answer: 'Yes — I joined Tech Circle full-time in mid-2023, so this is my first full year with them. My Bing Equipment contract also ended earlier than expected, so those wages are a bit lower.',
   date: 'Mar 15, 2025',
 }
 
@@ -108,17 +108,17 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 {issueNumber != null && (
                   <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
                 )}
-                Significant income drop
+                W-2 wages up 18% year-over-year
               </span>
             </div>
-            <p className={styles.summary}>Wages dropped by $21.5k (-15%) vs Prior Year.</p>
+            <p className={styles.summary}>Combined W-2 wages are $124,304 — up $19,304 (+18%) vs. prior year ($105,000).</p>
           </div>
 
           {/* Root cause */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>
-              Bing W-2 shows $22k reduction with low scan confidence (72%).
+              Tech Circle wages increased substantially, reflecting a first full year of employment. Bing Equipment wages decreased as the contract ended early. Net result is an overall 18% increase.
             </p>
           </div>
 
@@ -174,8 +174,9 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
-              <li>Confirm the Bing Equipment wages amount ($60,000) against the source document. Scan confidence is low (72%).</li>
-              <li>Confirm with the client whether the income reduction is expected.</li>
+              <li>Confirm both W-2 Box 1 amounts against the source documents (Bing Equipment: $60,000; Tech Circle: $64,304).</li>
+              <li>Confirm with Jordan that the employment changes at both employers are as described.</li>
+              <li>Verify no additional W-2s are missing from the import.</li>
             </ul>
           </div>
 

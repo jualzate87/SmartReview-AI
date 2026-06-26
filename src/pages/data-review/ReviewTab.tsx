@@ -1,4 +1,4 @@
-import { PopOut } from '@design-systems/icons'
+import { PopOut, PopIn } from '@design-systems/icons'
 import sparklesIcon from '../../assets/icons/sparkles.svg'
 import styles from '../../styles/data-review/ReviewTab.module.css'
 
@@ -51,26 +51,15 @@ export default function ReviewTab({ activeTopTab = 'w2s', onTopTabChange, onTabC
         ))}
       </div>
 
-      {/* Dock-back button (popout window) or Pop-out button (main window) */}
-      {isPopout ? (
+      {/* Dock-back button — only shown in the popout window */}
+      {isPopout && (
         <button
           className={styles.dockBackBtn}
-          aria-label="Close and dock back"
+          aria-label="Dock back to main window"
           onClick={() => window.close()}
         >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M1 1L6 6M6 6H2M6 6V2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            <rect x="5" y="5" width="8" height="8" rx="1" stroke="currentColor" strokeWidth="1.5"/>
-          </svg>
+          <PopIn size="small" />
           Dock back
-        </button>
-      ) : (
-        <button
-          className={styles.popOutBtn}
-          aria-label="Pop out to new window"
-          onClick={onPopOut}
-        >
-          <PopOut size="medium" />
         </button>
       )}
     </div>

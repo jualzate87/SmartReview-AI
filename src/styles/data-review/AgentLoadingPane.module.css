@@ -83,7 +83,7 @@
 }
 
 .titleText {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: var(--font-size-component-medium, 16px);
   font-weight: var(--font-weight-component-bold, 600);
   line-height: 1.3;
@@ -185,7 +185,7 @@
 }
 
 .greetingTitle {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 24px;
   font-weight: 400;
   color: #21262a;
@@ -194,7 +194,7 @@
 }
 
 .greetingSubtext {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 14px;
   font-weight: 400;
   color: #6b6c72;

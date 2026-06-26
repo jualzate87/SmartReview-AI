@@ -19,19 +19,20 @@ export interface FieldMeta {
 }
 
 // Static metadata for each 1040 field
+// Prior values match the 2024 source document exactly
 export const FIELD_META: Record<string, FieldMeta> = {
   wages: {
     label: 'Wages',
-    prior: 146000,
-    current: 124265,
+    prior: 105000,
+    current: 124304,
     sources: [
       { label: 'Bing Equipment', value: 60000 },
-      { label: 'Tech Circle',    value: 64265 },
+      { label: 'Tech Circle',    value: 64304 },
     ],
   },
   taxableInterest: {
     label: 'Taxable interest',
-    prior: 3181,
+    prior: 1400,
     current: 4535,
     sources: [
       { label: 'MegaBank (1099-INT)', value: 4535 },
@@ -39,7 +40,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   qualifiedDivs: {
     label: 'Qualified dividends',
-    prior: 127,
+    prior: 0,
     current: 45,
     sources: [
       { label: 'Citigroup (1099-DIV)', value: 45 },
@@ -47,7 +48,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   ordinaryDivs: {
     label: 'Ordinary dividends',
-    prior: 478,
+    prior: 500,
     current: 531,
     sources: [
       { label: 'Citigroup (1099-DIV)', value: 531 },
@@ -55,7 +56,7 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   capitalGain: {
     label: 'Capital gain / (loss)',
-    prior: 239,
+    prior: 2500,
     current: 602,
     sources: [
       { label: 'Schedule D', value: 602 },
@@ -63,13 +64,13 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   totalIncome: {
     label: 'Total income',
-    prior: 152666,
-    current: 134472,
+    prior: 109400,
+    current: 134476,
   },
   agi: {
     label: 'Adjusted gross income',
-    prior: 152666,
-    current: 134472,
+    prior: 109400,
+    current: 134476,
   },
   stdDeduction: {
     label: 'Standard deduction',
@@ -81,12 +82,12 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   taxableIncome: {
     label: 'Taxable income',
-    prior: 138816,
-    current: 119872,
+    prior: 95550,
+    current: 119876,
   },
   withholding: {
     label: 'Federal income tax withheld',
-    prior: 21400,
+    prior: 15987,
     current: 15987,
     sources: [
       { label: 'Bing Equipment (W-2)', value: 10000 },
@@ -158,7 +159,7 @@ export default function FieldPopover({
   if (!meta) return null
 
   const diff = meta.current - meta.prior
-  const pct  = Math.round((diff / meta.prior) * 100)
+  const pct  = meta.prior !== 0 ? Math.round((diff / meta.prior) * 100) : null
 
   // Position: right of the form doc, vertically centered on the anchor cell
   // Calculated relative to the viewport
@@ -203,13 +204,17 @@ export default function FieldPopover({
             <div className={styles.yoyDivider} />
             <div className={styles.yoyCol}>
               <span className={styles.yoyColLabel}>Diff</span>
-              <span className={styles.yoyColValue}>{diff >= 0 ? '+' : ''}{fmt(diff)}</span>
+              <span className={styles.yoyColValue}>{diff > 0 ? `+$${fmt(diff)}` : diff < 0 ? `−$${fmt(Math.abs(diff))}` : '—'}</span>
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
-            <span className={`${styles.yoyBadge} ${badgeClass(pct)}`}>
-              {pct >= 0 ? `+${pct}%` : `${pct}%`}
-            </span>
+            {pct !== null ? (
+              <span className={`${styles.yoyBadge} ${badgeClass(pct)}`}>
+                {pct >= 0 ? `+${pct}%` : `${pct}%`}
+              </span>
+            ) : (
+              <span className={`${styles.yoyBadge} ${styles.yoyBadgeNeutral}`}>New</span>
+            )}
           </div>
         </div>
       </div>

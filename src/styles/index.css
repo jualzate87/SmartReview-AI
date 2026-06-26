@@ -1,14 +1,5 @@
 :root {
-  /* Fonts */
-  --font-family-body: Arial, sans-serif;
-  --font-family-component: Arial, sans-serif;
-  --font-family-heading: Arial, sans-serif;
-  --font-family-display: Arial, sans-serif;
-  --font-family-mega: Arial, sans-serif;
-  --font-name-body: Arial, sans-serif;
-  --font-name-component: Arial, sans-serif;
-  --font-name-heading: Arial, sans-serif;
-  --font-name-display: Arial, sans-serif;
+  /* Font sizes/weights only — font-family tokens come from intuit.css */
   --font-size-body-3: 14px;
   --font-size-component-x-small: 12px;
   --font-weight-component-bold: 700;
@@ -78,17 +69,15 @@
   --duration-fade-slow: 250ms;
 }
 
-/* Nuclear option: override everything including @design-systems/theme */
 *, *::before, *::after {
   box-sizing: border-box;
-  font-family: Arial, sans-serif !important;
 }
 
 html, body {
-  font-family: Arial, sans-serif !important;
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: var(--font-family-body, Avenir Next forINTUIT, Avenir, Helvetica, Arial, sans-serif);
   line-height: 1.5;
   color: var(--color-text-primary, #393A3D);
   background-color: var(--color-page-background-primary, #FFFFFF);

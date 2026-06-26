@@ -59,23 +59,49 @@ const CARD_ICONS = [
   <img src={taxesAndCreditsIcon} alt="" width={20} height={20} />,
 ]
 
-// ── YoY Finding: Taxable Interest +42% ───────────────────────────────────
+// ── YoY Finding: Wages +18% ──────────────────────────────────────────────
+const WAGES_ISSUE = {
+  issueKey: 'wages',
+  dotColor: 'orange' as const,
+  title: 'W-2 wages up 18% year-over-year',
+  summary: 'Combined W-2 wages are $124,304 for 2024 — an 18% increase over the prior year total of $105,000. Bing Equipment ($60,000) and Tech Circle ($64,304) are the two sources. The increase is moderate and likely reflects regular pay, but worth confirming no employer changes occurred.',
+  taxImpact: 'At Jordan\'s marginal rate (~22%), the additional $19,304 in wage income adds approximately $4,247 in federal tax compared to last year.',
+  rootCause: 'Bing Equipment wages dropped slightly compared to the prior year. Tech Circle wages rose by ~$1,304. The overall increase is driven by Tech Circle compensation.',
+  tableRows: [
+    { label: 'Bing Equipment (Box 1)', cols: ['$60,000',  '$82,000',  '−$22,000', '−27%'], badge: 'orange' as const, total: false },
+    { label: 'Tech Circle (Box 1)',    cols: ['$64,304',  '$23,000',  '+$41,304',  '+180%'], badge: 'red'    as const, total: false },
+    { label: 'Total wages',            cols: ['$124,304', '$105,000', '+$19,304',  '+18%'],  badge: 'orange' as const, total: true  },
+  ],
+  tableHeaders: ['Source', '2024', '2023', 'Change', ''],
+  suggestedActions: [
+    'Confirm both W-2 Box 1 amounts against the source documents.',
+    'Ask Jordan whether employment at Bing Equipment or Tech Circle changed during 2024.',
+    'Verify no additional W-2s are missing from the import.',
+  ],
+  category: 'YoY analysis',
+  viewSourceLabel: 'View W-2s',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'bingEquipment' as const,
+  viewSourceField: 'wages',
+}
+
+// ── YoY Finding: Taxable Interest +224% ──────────────────────────────────
 const TAXABLE_INTEREST_ISSUE = {
   issueKey: 'taxableInterest',
   dotColor: 'red' as const,
-  title: 'Taxable interest up 42% year-over-year',
-  summary: 'MegaBank 1099-INT shows $4,535 in taxable interest (Box 1) — a 42% increase vs. the prior year figure of $3,194. This is a significant jump that warrants confirmation.',
-  taxImpact: 'At Jordan\'s marginal rate (~22%), the additional $1,341 in interest income adds approximately $295 in federal tax compared to last year. The total interest income of $4,535 flows to Form 1040 line 2b.',
-  rootCause: 'The increase may reflect a higher account balance, a new high-yield savings account, or a CD maturing during 2024. Box 3 (U.S. Savings Bond interest, $35) also contributes to the total on line 2b.',
+  title: 'Taxable interest up 224% year-over-year',
+  summary: 'MegaBank 1099-INT shows $4,535 in taxable interest (Box 1) — a 224% increase vs. the prior year figure of $1,400. This is a significant jump that strongly warrants confirmation.',
+  taxImpact: 'At Jordan\'s marginal rate (~22%), the additional $3,135 in interest income adds approximately $690 in federal tax compared to last year. The total interest income of $4,535 flows to Form 1040 line 2b.',
+  rootCause: 'The large increase likely reflects a new high-yield savings account, a CD opened or matured during 2024, or a significantly larger account balance. Box 3 (U.S. Savings Bond interest, $35) also contributes to line 2b.',
   tableRows: [
-    { label: 'Box 1 (Interest income)', cols: ['$4,500',  '$3,159', '+$1,341', '+42%'], badge: 'red'    as const, total: false },
-    { label: 'Box 3 (U.S. Bond int.)',  cols: ['$35',     'N/A',    'N/A',     '—'  ], badge: undefined,          total: false },
-    { label: 'Line 2b total',           cols: ['$4,535',  '$3,194', '+$1,341', '+42%'], badge: 'red'    as const, total: true  },
+    { label: 'Box 1 (Interest income)', cols: ['$4,500', '$1,365', '+$3,135', '+229%'], badge: 'red'    as const, total: false },
+    { label: 'Box 3 (U.S. Bond int.)',  cols: ['$35',    '$35',    '$0',      '—'   ], badge: undefined,          total: false },
+    { label: 'Line 2b total',           cols: ['$4,535', '$1,400', '+$3,135', '+224%'], badge: 'red'    as const, total: true  },
   ],
   tableHeaders: ['Field', '2024', '2023', 'Change', ''],
   suggestedActions: [
     'Confirm the $4,500 Box 1 amount against the MegaBank 1099-INT source document.',
-    'Ask Jordan whether a new savings account or CD was opened in 2024 to explain the increase.',
+    'Ask Jordan whether a new savings account, high-yield account, or CD was opened in 2024.',
     'Confirm no additional 1099-INT documents are missing from the import.',
   ],
   category: 'YoY analysis',
@@ -323,6 +349,7 @@ export default function AgentReportPane({
   }
 
   const getIssueConfig = (key: string) => {
+    if (key === WAGES_ISSUE.issueKey) return WAGES_ISSUE
     if (key === TAXABLE_INTEREST_ISSUE.issueKey) return TAXABLE_INTEREST_ISSUE
     if (key === SCAN_QUALITY_ISSUE.issueKey) return SCAN_QUALITY_ISSUE
     if (key === IRS_COMPLIANCE_ISSUE.issueKey) return IRS_COMPLIANCE_ISSUE
@@ -512,17 +539,13 @@ export default function AgentReportPane({
                   const wagesReviewed = !!wagesSignOff
                   const intSignOff    = reviewedFields.get('taxableInterest')
                   const intReviewed   = !!intSignOff
-                  const prior = 146000
-                  const diff = total1a - prior
-                  const pct = Math.round((diff / prior) * 100)
-                  const diffK = Math.abs(diff / 1000).toFixed(1)
                   return (
                     <div className={styles.findingCard} style={{ gap: 12 }}>
-                      {/* Finding 1 — Wages drop */}
+                      {/* Finding 1 — Wages +18% */}
                       <button className={`${styles.findingInner} ${wagesReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD['wages'] ?? null)}>
                         <div className={styles.findingTitleRow}>
                           {wagesReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
-                          <span className={styles.findingTitle}>Significant income drop</span>
+                          <span className={styles.findingTitle}>W-2 wages up 18% year-over-year</span>
                           <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('wages') + 1} of {GUIDED_ORDER.length}</span>
                           {wagesReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
@@ -530,7 +553,7 @@ export default function AgentReportPane({
                           <span className={styles.findingSignOff}>{wagesSignOff.by} · {wagesSignOff.at}</span>
                         )}
                         <p className={styles.findingBody}>
-                          Wages {diff < 0 ? 'dropped' : 'increased'} by ${diffK}k ({pct > 0 ? '+' : ''}{pct}%) vs. prior year.
+                          Combined W-2 wages are $124,304 — up $19,304 (+18%) vs. prior year ($105,000). Bing Equipment and Tech Circle are the two sources.
                         </p>
                         <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
                           <Tooltip text="Open the W-2 documents side-by-side to verify the reported wage amounts">
@@ -548,7 +571,7 @@ export default function AgentReportPane({
                       <button className={`${styles.findingInner} ${intReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD['taxableInterest'] ?? null)}>
                         <div className={styles.findingTitleRow}>
                           {intReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
-                          <span className={styles.findingTitle}>Taxable interest up 42% year-over-year</span>
+                          <span className={styles.findingTitle}>Taxable interest up 224% year-over-year</span>
                           <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('taxableInterest') + 1} of {GUIDED_ORDER.length}</span>
                           {intReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                         </div>
@@ -556,7 +579,7 @@ export default function AgentReportPane({
                           <span className={styles.findingSignOff}>{intSignOff.by} · {intSignOff.at}</span>
                         )}
                         <p className={styles.findingBody}>
-                          MegaBank 1099-INT shows $4,535 in interest income — a 42% jump vs. prior year ($3,194).
+                          MegaBank 1099-INT shows $4,535 in interest income — a 224% jump vs. prior year ($1,400). Likely a new high-yield account or CD.
                         </p>
                         <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
                           <Tooltip text="Open the MegaBank 1099-INT to verify Box 1 interest income">

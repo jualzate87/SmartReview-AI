@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { ZoomOut, ZoomIn } from '@design-systems/icons'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
@@ -53,18 +53,75 @@ export default function DocumentPreview({ imageSrc, alt, selectedField, highligh
   const zoomOut = () => setZoomIndex(i => Math.max(0, i - 1))
   const zoomIn  = () => setZoomIndex(i => Math.min(ZOOM_LEVELS.length - 1, i + 1))
 
+  // ── Click-and-drag panning ──
+  const imageAreaRef = useRef<HTMLDivElement>(null)
+  const dragState = useRef({ active: false, startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+
+  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
+    const el = imageAreaRef.current
+    if (!el) return
+    dragState.current = { active: true, startX: e.clientX, startY: e.clientY, scrollLeft: el.scrollLeft, scrollTop: el.scrollTop }
+    setIsDragging(false)
+  }, [])
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (!dragState.current.active) return
+      const dx = e.clientX - dragState.current.startX
+      const dy = e.clientY - dragState.current.startY
+      if (!isDragging && Math.abs(dx) < 4 && Math.abs(dy) < 4) return
+      setIsDragging(true)
+      const el = imageAreaRef.current
+      if (!el) return
+      el.scrollLeft = dragState.current.scrollLeft - dx
+      el.scrollTop  = dragState.current.scrollTop  - dy
+    }
+    const onMouseUp = () => {
+      dragState.current.active = false
+      setTimeout(() => setIsDragging(false), 0)
+    }
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+  }, [isDragging])
+
+  // ── Trackpad pinch-to-zoom — non-passive to allow preventDefault ──
+  useEffect(() => {
+    const el = imageAreaRef.current
+    if (!el) return
+    const handleWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey) return
+      e.preventDefault()
+      if (e.deltaY > 0) setZoomIndex(i => Math.max(0, i - 1))
+      else              setZoomIndex(i => Math.min(ZOOM_LEVELS.length - 1, i + 1))
+    }
+    el.addEventListener('wheel', handleWheel, { passive: false })
+    return () => el.removeEventListener('wheel', handleWheel)
+  }, [])
+
   // Find if there's an overlay for the currently selected field on this doc type
   const overlay = selectedField ? OVERLAYS[docType]?.[selectedField] : undefined
 
   return (
     <div className={styles.container}>
       {/* Scrollable image area */}
-      <div className={styles.imageArea}>
+      <div
+        ref={imageAreaRef}
+        className={styles.imageArea}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        onMouseDown={onMouseDown}
+      >
         <div style={{ position: 'relative', width: `${zoom}%`, lineHeight: 0, flexShrink: 0 }}>
           <img
             src={imageSrc}
             alt={alt}
             className={styles.documentImage}
+            draggable={false}
           />
 
           {/* Field highlight overlay — marker-pen style highlight over the field */}

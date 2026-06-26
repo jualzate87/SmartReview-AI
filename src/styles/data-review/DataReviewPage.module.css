@@ -75,12 +75,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  gap: 6px;
+  padding: 6px 10px;
   background: var(--color-container-background-primary, #ffffff);
   border: 1px solid #859299;
   border-radius: 6px;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+.intuitIntelLabel {
+  font-family: var(--font-family-component, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: #21262a;
+  white-space: nowrap;
 }
 
 .intuitIntelBtn:hover {
@@ -90,6 +99,10 @@
 .intuitIntelBtnActive {
   background: #e0edff;
   border-color: #103661;
+}
+
+.intuitIntelBtnActive .intuitIntelLabel {
+  color: #103661;
 }
 
 .intuitIntelIcon {
@@ -108,7 +121,7 @@
   background: #c9500f;
   color: #fff;
   font-family: var(--font-family-component);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 500;
   line-height: 16px;
   text-align: center;
@@ -283,7 +296,7 @@
   background: #ff6a00;
   color: #fff;
   font-family: var(--font-family-component) !important;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;

@@ -562,7 +562,7 @@
 /* Persistent "Edited" badge — stays visible after a value has been changed */
 .editedBadge {
   font-family: var(--font-family-component) !important;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -702,7 +702,7 @@
 .commentPopoverChip {
   display: inline-block;
   font-family: var(--font-family-component);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: #205ea3;
   background: #e8f0f6;

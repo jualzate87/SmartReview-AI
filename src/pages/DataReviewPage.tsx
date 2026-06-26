@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ArrowLeft, DotsSix, Panel, ChevronLeft, Comment } from '@design-systems/icons'
+import { ArrowLeft, DotsSix, Panel, ChevronLeft, Comment, PopOut } from '@design-systems/icons'
 import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import NotesPane from './data-review/NotesPane'
@@ -322,11 +322,12 @@ export default function DataReviewPage() {
 
           <button
             className={`${styles.intuitIntelBtn} ${notesOpen ? styles.intuitIntelBtnActive : ''}`}
-            aria-label="Comments and flags"
+            aria-label="Comments"
             style={{ position: 'relative' }}
             onClick={notesOpen ? handleCloseNotes : handleOpenNotes}
           >
             <Comment size="medium" />
+            <span className={styles.intuitIntelLabel}>Comments</span>
             {notes.length > 0 && (
               <span className={styles.notesBadge}>{notes.length}</span>
             )}
@@ -355,6 +356,7 @@ export default function DataReviewPage() {
             }}
           >
             <Panel size="medium" />
+            <span className={styles.intuitIntelLabel}>Source Documents</span>
           </button>
           <button
             className={`${styles.intuitIntelBtn} ${agentView !== 'idle' ? styles.intuitIntelBtnActive : ''}`}
@@ -362,6 +364,7 @@ export default function DataReviewPage() {
             onClick={() => handleAgentOpen()}
           >
             <img src={intuitAssistIcon} alt="" className={styles.intuitIntelIcon} />
+            <span className={styles.intuitIntelLabel}>AI Review</span>
           </button>
         </div>
       </div>
@@ -381,6 +384,7 @@ export default function DataReviewPage() {
             onToggleChecked={handleToggleChecked}
             issueField={issueField}
             fieldValues={{ ...fieldValues, withholding: totalWithholding }}
+            onAddFieldNote={(text, context) => handleAddNote(text, context)}
             onViewSource={(fieldName, sourceLabel) => {
               // Map field → document tab
               const tabMap: Record<string, typeof activeTopTab> = {
@@ -441,41 +445,48 @@ export default function DataReviewPage() {
                 opacity: (agentView === 'loading' || agentView === 'report' || agentView === 'closing' || (!rightPanelVisible && !rightPanelExiting)) ? 0 : 1,
               }}
             >
-              {/* Back to agent insights — shown whenever the right panel is visible */}
-              {agentView === 'idle' && rightPanelVisible && (
-                <div className={styles.agentBackLink}>
+              {/* Source panel header — always visible, pop-out on right */}
+              <div className={styles.sourcePanelHeader}>
+                {agentView === 'idle' && rightPanelVisible ? (
                   <button
                     className={styles.agentBackBtn}
                     onClick={() => { setFromAgent(false); setActiveIssueField(null); handleAgentOpen(agentSubView) }}
                   >
                     <ChevronLeft size="small" /> Back to agent insights
                   </button>
-                </div>
-              )}
+                ) : (
+                  <span className={styles.sourcePanelTitle}>Imported documents</span>
+                )}
+                <button
+                  className={styles.agentPopOutBtn}
+                  aria-label="Pop out to new window"
+                  onClick={() => {
+                    setPoppedOut(true)
+                    const popoutWindow = window.open(
+                      `${window.location.origin}${window.location.pathname}#/data-review-popout`,
+                      '_blank',
+                      'width=800,height=900'
+                    )
+                    if (popoutWindow) {
+                      const checkClosed = setInterval(() => {
+                        if (popoutWindow.closed) {
+                          clearInterval(checkClosed)
+                          setPoppedOut(false)
+                        }
+                      }, 500)
+                    }
+                  }}
+                >
+                  <PopOut size="medium" />
+                </button>
+              </div>
               <ReviewTab
                 activeTopTab={activeTopTab}
                 onTopTabChange={(tab) => {
                   setActiveTopTab(tab)
-                  // Manual tab switch clears issue context so orange doesn't bleed across tabs
                   setFromAgent(false)
                   setSelectedField(null)
                   setActiveIssueField(null)
-                }}
-                onPopOut={() => {
-                  setPoppedOut(true)
-                  const popoutWindow = window.open(
-                    `${window.location.origin}${window.location.pathname}#/data-review-popout`,
-                    '_blank',
-                    'width=800,height=900'
-                  )
-                  if (popoutWindow) {
-                    const checkClosed = setInterval(() => {
-                      if (popoutWindow.closed) {
-                        clearInterval(checkClosed)
-                        setPoppedOut(false)
-                      }
-                    }, 500)
-                  }
                 }}
               />
 
@@ -537,11 +548,11 @@ export default function DataReviewPage() {
                   onMarkReviewed={handleMarkReviewed}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
-                    ...(activeSubTab === 'bingEquipment' && !reviewedFields.has('wages')
-                      ? { wages: 'Significant income drop — Wages fell $21.5k (-15%) vs. prior year. Bing Equipment W-2 shows $60k vs $82k prior year.' }
+                    ...(!reviewedFields.has('wages')
+                      ? { wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.' }
                       : {}),
-                    ...(activeSubTab === 'techCircle' && !reviewedFields.has('box12')
-                      ? { box12: 'Low scan confidence (68%) on Box 12 Code D — 401(k) deferral amount of $5,000 may be misread.' }
+                    ...(!reviewedFields.has('box12')
+                      ? { box12: 'Box 12 data was not imported. Enter Code AA amount manually from source W-2.' }
                       : {}),
                   }}
                 />

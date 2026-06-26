@@ -14,7 +14,7 @@
   border-bottom: 2px solid transparent;
   background: none;
   cursor: pointer;
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 14px;
   font-weight: 600;
   line-height: 20px;

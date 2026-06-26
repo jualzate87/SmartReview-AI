@@ -16,7 +16,7 @@
 }
 
 .productLogo {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 14px;
   font-weight: 700;
   color: #ffffff;
@@ -24,13 +24,13 @@
 }
 
 .productSeparator {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 13px;
   color: rgba(255, 255, 255, 0.4);
 }
 
 .productSub {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 12px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.7);
@@ -41,8 +41,8 @@
   align-items: center;
   gap: 5px;
   color: #4ade80;
-  font-family: Arial, sans-serif !important;
-  font-size: 11px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 500;
 }
 
@@ -64,8 +64,8 @@
 }
 
 .metaLabel {
-  font-family: Arial, sans-serif !important;
-  font-size: 10px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 600;
   color: #8a9299;
   text-transform: uppercase;
@@ -73,7 +73,7 @@
 }
 
 .metaValue {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 12px;
   font-weight: 600;
   color: #21262a;
@@ -102,8 +102,8 @@
 }
 
 .sectionName {
-  font-family: Arial, sans-serif !important;
-  font-size: 11px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 700;
   color: #5d686f;
   text-transform: uppercase;
@@ -132,8 +132,8 @@
 }
 
 .qNumber {
-  font-family: Arial, sans-serif !important;
-  font-size: 10px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 700;
   color: #205ea3;
   background: #ddeeff;
@@ -145,7 +145,7 @@
 }
 
 .questionText {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
@@ -175,8 +175,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: Arial, sans-serif !important;
-  font-size: 9px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 700;
   color: #ffffff;
   flex-shrink: 0;
@@ -184,8 +184,8 @@
 }
 
 .answerMeta {
-  font-family: Arial, sans-serif !important;
-  font-size: 11px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   color: #8a9299;
   flex: 1;
 }
@@ -194,8 +194,8 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-family: Arial, sans-serif !important;
-  font-size: 10px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 600;
   color: #15803d;
   background: #dcfce7;
@@ -204,7 +204,7 @@
 }
 
 .answerText {
-  font-family: Arial, sans-serif !important;
+  font-family: var(--font-family-component) !important;
   font-size: 13px;
   font-weight: 400;
   line-height: 1.55;
@@ -232,14 +232,14 @@
 }
 
 .relatedLabel {
-  font-family: Arial, sans-serif !important;
-  font-size: 11px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   color: #8a9299;
 }
 
 .relatedValue {
-  font-family: Arial, sans-serif !important;
-  font-size: 11px;
+  font-family: var(--font-family-component) !important;
+  font-size: 12px;
   font-weight: 600;
   color: #205ea3;
 }
