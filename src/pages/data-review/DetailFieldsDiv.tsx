@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
-// 1099-DIV — Citigroup Global Markets (Citi Forms 1099 for 2024, Page 2 of 5)
+// 1099-DIV — Unwavering Financial
 const PAYER_DATA = {
   ein: '11-2418191',
-  name: 'CITIGROUP GLOBAL MKTS INC.',
+  name: 'UNWAVERING FINANCIAL INC.',
   street: '388 Greenwich Street',
   city: 'New York',
   state: 'NY',
@@ -14,17 +14,17 @@ const PAYER_DATA = {
 
 const RECIPIENT_DATA = {
   ssn: 'XXX-XX-8209',
-  name: 'Jordan Wells',
+  name: 'Jessica Drake',
   street: '333 Easy Street',
   city: 'San Francisco',
   state: 'CA',
   zip: '94133-4263',
 }
 
-// Form 1099-DIV boxes — from Citi document
+// Form 1099-DIV boxes — Jessica Drake / Unwavering Financial
 const FORM_DATA = {
-  box1a_totalOrdinary:     '31.24',  // Box 1a — Total ordinary dividends
-  box1b_qualifiedDivs:     '20.10',  // Box 1b — Qualified dividends
+  box1a_totalOrdinary:     '331,250',  // Box 1a — Total ordinary dividends
+  box1b_qualifiedDivs:     '187,500',  // Box 1b — Qualified dividends
   box2a_totalCapGain:      '',       // Box 2a — Total capital gain distr.
   box2b_unrecap1250:       '',       // Box 2b — Unrecap. Sec. 1250 gain
   box2c_sec1202:           '',       // Box 2c — Section 1202 gain
@@ -45,10 +45,11 @@ interface DetailFieldsDivProps {
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
   onMarkReviewed?: (field: string) => void
+  onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
 }
 
-export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields }: DetailFieldsDivProps) {
+export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields }: DetailFieldsDivProps) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -85,7 +86,7 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
     <div className={styles.container}>
       {/* Page header */}
       <div className={styles.pageHeader}>
-        <h2 className={styles.title}>Details: Dividend Income (1099-DIV) — Citigroup</h2>
+        <h2 className={styles.title}>Details: Dividend Income (1099-DIV) — Unwavering Financial</h2>
       </div>
 
       <div className={styles.inputContainer}>

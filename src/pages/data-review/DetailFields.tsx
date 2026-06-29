@@ -22,13 +22,14 @@ interface DetailFieldsProps {
   selectedField?: string | null
   highlightMode?: 'orange' | 'blue'
   onFieldSelect?: (field: string | null) => void
-  activeSubTab?: 'bingEquipment' | 'techCircle'
+  activeSubTab?: 'techCircle'
   onSubTabChange?: (tab: string) => void
-  wages?: { bingEquipment: number; techCircle: number }
+  wages?: { techCircle: number }
   onWageChange?: (employer: string, value: number) => void
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: FieldValuesKey, value: number) => void
   onMarkReviewed?: (field: string) => void
+  onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
   /** Map of doc field key → issue summary shown as a hover tooltip */
   flaggedFields?: Record<string, string>
@@ -38,18 +39,18 @@ interface DetailFieldsProps {
   onAddFieldNote?: (text: string, context: string) => void
 }
 
-// Static non-wages fields per employer
+// Static non-wages fields per employer (Jessica Drake — Tech Circle only)
 const EMPLOYER_DATA = {
   bingEquipment: {
-    id: '12-3456789',
-    name: 'Bing Equipment',
-    street: '3833 Soundtech Ct SE',
-    city: 'Kentwood', state: 'CA', zip: '93004',
-    federalTax: '10,000',
-    socialSecurityWages: '60,000', ssTax: '3,720',
-    medicareWages: '60,000', medicareTax: '870',
-    ssTips: '25', allocatedTips: '0',
-    dependentCare: '25', nonqualified: '39',
+    id: '',
+    name: '',
+    street: '',
+    city: '', state: '', zip: '',
+    federalTax: '0',
+    socialSecurityWages: '0', ssTax: '0',
+    medicareWages: '0', medicareTax: '0',
+    ssTips: '0', allocatedTips: '0',
+    dependentCare: '0', nonqualified: '0',
     box12Code: '' as string, box12Amount: '' as string,
   },
   techCircle: {
@@ -57,12 +58,12 @@ const EMPLOYER_DATA = {
     name: 'Tech Circle Inc',
     street: '321 Main Orchard Dr',
     city: 'Reno', state: 'NV', zip: '89501',
-    federalTax: '16,798',
-    socialSecurityWages: '125,548', ssTax: '7,784',
-    medicareWages: '125,548', medicareTax: '1,820',
+    federalTax: '15,840',
+    socialSecurityWages: '118,940', ssTax: '7,374',
+    medicareWages: '118,940', medicareTax: '1,724',
     ssTips: '0', allocatedTips: '0',
     dependentCare: '0', nonqualified: '0',
-    box12Code: 'AA', box12Amount: '13,456',
+    box12Code: '' as string, box12Amount: '' as string,
     box12Entries: [
       { sub: 'a', code: '', amount: '' },
       { sub: 'b', code: '', amount: '' },
@@ -78,13 +79,14 @@ export default function DetailFields({
   selectedField,
   highlightMode = 'blue',
   onFieldSelect,
-  activeSubTab = 'bingEquipment',
+  activeSubTab = 'techCircle',
   onSubTabChange,
-  wages = { bingEquipment: 0, techCircle: 125548 },
+  wages = { techCircle: 118940 },
   onWageChange,
   fieldValues,
   onFieldValueChange,
   onMarkReviewed,
+  onMarkReviewedBulk,
   reviewedFields,
   flaggedFields = {},
   verifiedDocs,
@@ -313,7 +315,7 @@ export default function DetailFields({
     )
   }
 
-  const docKeys = ['bingEquipment', 'techCircle']
+  const docKeys = ['techCircle']
   const isVerified = verifiedDocs?.has(activeSubTab) ?? false
 
   return (
@@ -353,7 +355,7 @@ export default function DetailFields({
             activeIndex={tabs.findIndex(t => t.active)}
             onTabChange={(i) => {
               const tab = tabs[i]
-              if (tab) onSubTabChange?.(i === 0 ? 'bingEquipment' : 'techCircle')
+              if (tab) onSubTabChange?.('techCircle')
             }}
           />
         )}

@@ -60,7 +60,7 @@ export default function ReturnInsightsPage() {
           <div className={styles.mainContent}>
             <img
               src={insightsImage}
-              alt="Return Insights — Jordan Wells 2025 Tax Report"
+              alt="Return Insights — Jessica Drake 2025 Tax Report"
               className={styles.insightsImage}
             />
           </div>

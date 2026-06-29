@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { ZoomOut, ZoomIn } from '@design-systems/icons'
 import styles from '../../styles/data-review/DocumentPreview.module.css'
 
-type DocType = 'w2' | '1099-int' | '1099-div' | 'k1'
+type DocType = 'w2' | '1099-int' | '1099-div' | 'k1' | '1040'
 
 interface FieldOverlay {
   left: string; top: string; width: string; height: string
@@ -34,6 +34,7 @@ const OVERLAYS: Record<DocType, Partial<Record<string, FieldOverlay>>> = {
     qualifiedDivs: { left: '14.3%', top: '44.7%', width: '13.6%', height: '15.0%' },
   },
   'k1': {},
+  '1040': {},
 }
 
 interface DocumentPreviewProps {

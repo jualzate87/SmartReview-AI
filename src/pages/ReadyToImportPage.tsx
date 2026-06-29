@@ -6,9 +6,9 @@ import SmartReturnHeader from './SmartReturnHeader'
 import styles from '../styles/ReadyToImportPage.module.css'
 
 const DOCUMENTS = [
-  { type: 'W-2',       name: 'W-2 Wages',       source: 'Bing Equipment' },
   { type: 'W-2',       name: 'W-2 Wages',       source: 'Tech Circle' },
-  { type: '1099',      name: '1099-INT Interest', source: 'MegaBank' },
+  { type: '1099',      name: '1099-INT Interest', source: 'Unwavering Financial' },
+  { type: '1099',      name: '1099-DIV Dividends', source: 'Unwavering Financial' },
 ]
 
 export default function ReadyToImportPage() {
@@ -36,9 +36,9 @@ export default function ReadyToImportPage() {
               <div className={styles.cardInner}>
                 {/* Client row */}
                 <div className={styles.clientRow}>
-                  <div className={styles.clientAvatar}>JW</div>
+                  <div className={styles.clientAvatar}>JD</div>
                   <div className={styles.clientInfo}>
-                    <p className={styles.clientName}>Jordan Wells</p>
+                    <p className={styles.clientName}>Jessica Drake</p>
                     <p className={styles.clientMeta}>Form 1040 · Tax Year 2025</p>
                   </div>
                 </div>
@@ -71,7 +71,7 @@ export default function ReadyToImportPage() {
               </div>
             ) : (
               <div className={styles.loadingCard}>
-                <p className={styles.loadingTitle}>Preparing Jordan's return...</p>
+                <p className={styles.loadingTitle}>Preparing Jessica's return...</p>
                 <div className={styles.progressBar}>
                   <div className={styles.progressFill} />
                 </div>

@@ -34,24 +34,34 @@ interface IssueDetailPaneProps {
 
 // Mock client Q&A keyed by issueKey
 const CLIENT_QA: Record<string, { question: string; answer: string; date: string }> = {
-  scanQuality: {
-    question: 'We noticed a discrepancy in your W-2 from Bing Equipment. Can you confirm the Box 1 wages amount?',
-    answer: 'Yes, that looks right — I left Bing Equipment in June 2024. The $60,000 reflects about half a year of salary.',
+  w2Box12: {
+    question: 'Box 12 on your Tech Circle W-2 was not captured during import. Do you recall the code and amount?',
+    answer: 'I believe it was a 401k deferral, code D. I can check my year-end pay stub for the exact amount.',
     date: 'Mar 15, 2025',
   },
-  irsCompliance: {
-    question: 'Did you receive any IRS notices or correspondence in 2024 related to prior-year returns?',
-    answer: 'No, nothing from the IRS. Everything was clean last year.',
+  w2Ein: {
+    question: 'The Employer Identification Number (EIN) on your Tech Circle W-2 was not found. Can you locate it on your physical W-2?',
+    answer: 'Sure — it\'s printed in Box b on the form. I\'ll send you a clearer scan.',
     date: 'Mar 15, 2025',
   },
-  qualifiedDivs: {
-    question: 'Your qualified dividends dropped significantly vs. last year. Did you sell or transfer any investment accounts in 2024?',
-    answer: 'Yes, I moved some funds out of my Citigroup brokerage account in early 2024 to cover a home repair.',
+  divCollectibles: {
+    question: 'Box 2d (collectibles gain) on your Unwavering Financial 1099-DIV appears blank. Did you sell any collectibles in 2024?',
+    answer: 'No, I don\'t believe so. That box should be zero.',
     date: 'Mar 16, 2025',
   },
-  earlyWithdrawal: {
-    question: 'We see an early withdrawal from a retirement account. Can you confirm the amount and whether the 10% penalty applies?',
-    answer: 'Yes, I pulled $8,500 from my IRA in August. I was told the penalty might be waived because it was for a medical expense, but I\'m not sure.',
+  divNonDiv: {
+    question: 'Box 3 (nondividend distributions) on your Unwavering Financial 1099-DIV was not imported. Do you have the source document handy?',
+    answer: 'I can pull it up. Give me a moment to check the original statement.',
+    date: 'Mar 16, 2025',
+  },
+  wagesConfidence: {
+    question: 'The scan of your Tech Circle W-2 Box 1 returned a lower-than-normal confidence score. Can you confirm your wages were $118,940?',
+    answer: 'Yes, that\'s correct — $118,940 matches my final pay stub for the year.',
+    date: 'Mar 15, 2025',
+  },
+  capitalGainNew: {
+    question: 'You have a $194,600 capital gain this year that didn\'t appear on your prior-year return. Can you describe the asset sale?',
+    answer: 'I sold some stock I\'d held for several years. Most should be long-term. I have the 1099-B from my brokerage.',
     date: 'Mar 16, 2025',
   },
 }
@@ -171,9 +181,9 @@ export default function IssueDetailPane({
                   {CLIENT_QA[issueKey].question}
                 </p>
                 <div className={styles.qaBubble}>
-                  <span className={styles.qaAvatar}>JW</span>
+                  <span className={styles.qaAvatar}>JD</span>
                   <div className={styles.qaText}>
-                    <span className={styles.qaName}>Jordan Wells · {CLIENT_QA[issueKey].date}</span>
+                    <span className={styles.qaName}>Jessica Drake · {CLIENT_QA[issueKey].date}</span>
                     <p className={styles.qaAnswer}>{CLIENT_QA[issueKey].answer}</p>
                   </div>
                 </div>

@@ -26,9 +26,8 @@ interface YoYDetailPaneProps {
 }
 
 const TABLE_ROWS = [
-  { label: 'Bing Equipment', y2024: '$60,000',  y2023: '$82,000',  diff: '-$22,000', pct: '-27%', badge: 'orange' as const, total: false },
-  { label: 'Tech Circle',    y2024: '$64,304',  y2023: '$23,000',  diff: '+$41,304', pct: '+180%', badge: 'red'   as const, total: false },
-  { label: 'Wages total',    y2024: '$124,304', y2023: '$105,000', diff: '+$19,304', pct: '+18%',  badge: 'orange' as const, total: true  },
+  { label: 'Tech Circle',    y2024: '$118,940', y2023: '$105,000', diff: '+$13,940', pct: '+13%', badge: 'orange' as const, total: false },
+  { label: 'Wages total',    y2024: '$118,940', y2023: '$105,000', diff: '+$13,940', pct: '+13%', badge: 'orange' as const, total: true  },
 ]
 
 // The 1040 field this finding maps to
@@ -36,8 +35,8 @@ const FINDING_FIELD = 'wages'
 
 // Client Q&A for the wages YoY finding
 const WAGES_QA = {
-  question: 'Your W-2 wages increased by about $19k compared to last year. Can you explain the change in income from Tech Circle?',
-  answer: 'Yes — I joined Tech Circle full-time in mid-2023, so this is my first full year with them. My Bing Equipment contract also ended earlier than expected, so those wages are a bit lower.',
+  question: 'Your W-2 wages were $118,940 this year vs. $105,000 last year. Can you confirm this reflects a full year at Tech Circle?',
+  answer: 'Yes — I was at Tech Circle all year. The increase reflects my annual raise. I\'ve uploaded the W-2.',
   date: 'Mar 15, 2025',
 }
 
@@ -108,17 +107,17 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 {issueNumber != null && (
                   <span className={styles.issueNum}>{String(issueNumber).padStart(2, '0')} </span>
                 )}
-                W-2 wages up 18% year-over-year
+                W-2 wages up 13% year-over-year
               </span>
             </div>
-            <p className={styles.summary}>Combined W-2 wages are $124,304 — up $19,304 (+18%) vs. prior year ($105,000).</p>
+            <p className={styles.summary}>Tech Circle wages are $118,940 — up $13,940 (+13%) vs. prior year ($105,000).</p>
           </div>
 
           {/* Root cause */}
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Root cause</p>
             <p className={styles.sectionBody}>
-              Tech Circle wages increased substantially, reflecting a first full year of employment. Bing Equipment wages decreased as the contract ended early. Net result is an overall 18% increase.
+              Tech Circle wages increased by $13,940 (+13%) year-over-year, reflecting a full year of employment and an annual raise.
             </p>
           </div>
 
@@ -131,9 +130,9 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
                 {WAGES_QA.question}
               </p>
               <div className={styles.qaBubble}>
-                <span className={styles.qaAvatar}>JW</span>
+                <span className={styles.qaAvatar}>JD</span>
                 <div className={styles.qaText}>
-                  <span className={styles.qaName}>Jordan Wells · {WAGES_QA.date}</span>
+                  <span className={styles.qaName}>Jessica Drake · {WAGES_QA.date}</span>
                   <p className={styles.qaAnswer}>{WAGES_QA.answer}</p>
                 </div>
               </div>
@@ -174,8 +173,8 @@ export default function YoYDetailPane({ onClose, onBack, onViewW2, onReviewSourc
           <div className={styles.section}>
             <p className={styles.sectionTitle}>Suggested action</p>
             <ul className={styles.actionList}>
-              <li>Confirm both W-2 Box 1 amounts against the source documents (Bing Equipment: $60,000; Tech Circle: $64,304).</li>
-              <li>Confirm with Jordan that the employment changes at both employers are as described.</li>
+              <li>Confirm Tech Circle W-2 Box 1 shows $118,940 against the source document.</li>
+              <li>Confirm with Jessica that the wage increase reflects her annual compensation.</li>
               <li>Verify no additional W-2s are missing from the import.</li>
             </ul>
           </div>

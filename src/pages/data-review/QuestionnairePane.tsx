@@ -14,7 +14,7 @@ const QA_ITEMS = [
     number: 1,
     section: 'Employment & wages',
     question: 'Did your employment situation change in 2024? Please list all employers, whether you started or left any jobs, and upload your W-2(s).',
-    answer: 'Yes — I left Bing Equipment in June 2024, so I only worked there for half the year. My other employer, Tech Circle, stayed the same. I\'ve uploaded both W-2s.',
+    answer: 'I worked at Tech Circle all year. I\'ve uploaded my W-2.',
     date: 'Mar 15, 2025',
     relatedFinding: 'Significant income drop',
   },
@@ -23,7 +23,7 @@ const QA_ITEMS = [
     number: 2,
     section: 'Employment & wages',
     question: 'Did you receive any freelance, consulting, or self-employment income in 2024? If so, please provide a summary of income and related business expenses.',
-    answer: 'No, nothing on the side this year. All income was from my two W-2 employers.',
+    answer: 'No, nothing on the side this year. All income was from Tech Circle.',
     date: 'Mar 15, 2025',
     relatedFinding: null,
   },
@@ -33,7 +33,7 @@ const QA_ITEMS = [
     number: 3,
     section: 'Interest & dividends',
     question: 'Did you open any new bank or savings accounts in 2024? Please upload all 1099-INT forms for interest income earned during the year.',
-    answer: 'Yes, I opened a high-yield savings account at MegaBank in early 2024. It earned quite a bit more than my old account. I\'ve uploaded the 1099-INT.',
+    answer: 'Yes, I have interest income from Unwavering Financial. I\'ve uploaded the 1099-INT.',
     date: 'Mar 15, 2025',
     relatedFinding: 'Taxable interest up 42%',
   },
@@ -42,7 +42,7 @@ const QA_ITEMS = [
     number: 4,
     section: 'Interest & dividends',
     question: 'Did you sell, transfer, or close any investment or brokerage accounts in 2024? Please upload all 1099-DIV and 1099-B forms.',
-    answer: 'Yes, I moved some funds out of my Citigroup brokerage account in early 2024 to cover a home repair. I\'ve uploaded the 1099-DIV.',
+    answer: 'Yes, I have dividend and capital gain activity through Unwavering Financial. I\'ve uploaded the 1099-DIV.',
     date: 'Mar 16, 2025',
     relatedFinding: 'Qualified dividends review',
   },
@@ -139,7 +139,7 @@ export default function QuestionnairePane({ onBack, closing = false }: Questionn
           <div className={qStyles.metaRow}>
             <div className={qStyles.metaItem}>
               <span className={qStyles.metaLabel}>Client</span>
-              <span className={qStyles.metaValue}>Jordan Wells</span>
+              <span className={qStyles.metaValue}>Jessica Drake</span>
             </div>
             <div className={qStyles.metaDivider} />
             <div className={qStyles.metaItem}>
@@ -176,8 +176,8 @@ export default function QuestionnairePane({ onBack, closing = false }: Questionn
                   {/* Answer */}
                   <div className={qStyles.answerBlock}>
                     <div className={qStyles.answerHeader}>
-                      <span className={qStyles.avatar}>JW</span>
-                      <span className={qStyles.answerMeta}>Jordan Wells · {item.date}</span>
+                      <span className={qStyles.avatar}>JD</span>
+                      <span className={qStyles.answerMeta}>Jessica Drake · {item.date}</span>
                       <span className={qStyles.answeredChip}>
                         <CircleCheck size="small" /> Answered
                       </span>

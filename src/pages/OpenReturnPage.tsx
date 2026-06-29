@@ -32,10 +32,9 @@ import styles from '../styles/OpenReturnPage.module.css'
 type Step = 1 | 2 | 3 | 4 | 5
 
 const CHECKLIST_ITEMS = [
-  { id: 'w2-bing',  type: 'W2',      label: 'Form W-2 from Bing Equipment' },
   { id: 'w2-tech',  type: 'W2',      label: 'Form W-2 from Tech Circle' },
-  { id: '1099-int', type: '1099-INT', label: 'Form 1099-INT from Megabank' },
-  { id: '1099-div', type: '1099-DIV', label: 'Form 1099-DIV from Citi Group' },
+  { id: '1099-int', type: '1099-INT', label: 'Form 1099-INT from Unwavering Financial' },
+  { id: '1099-div', type: '1099-DIV', label: 'Form 1099-DIV from Unwavering Financial' },
 ]
 
 const RECEIVED_DOCS = [
@@ -206,8 +205,8 @@ export default function OpenReturnPage() {
           <div className={styles.returnSubHeaderLeft}>
             {/* Client name */}
             <div className={styles.clientName}>
-              <span className={styles.clientNameText}>Jordan</span>
-              <span className={styles.clientNameText}>Wells</span>
+              <span className={styles.clientNameText}>Jessica</span>
+              <span className={styles.clientNameText}>Drake</span>
             </div>
             {/* Lock icon */}
             <div className={styles.lockIcon}><Lock size="small" /></div>
@@ -323,11 +322,11 @@ export default function OpenReturnPage() {
             </div>
           )}
 
-          {/* ── STEP 2: Let's get Jordan's documents ── */}
+          {/* ── STEP 2: Let's get Jessica's documents ── */}
           {step === 2 && (
             <div className={styles.contentArea}>
               <div className={styles.pageHeading}>
-                <h1 className={styles.pageTitle}>Let's get Jordan's documents</h1>
+                <h1 className={styles.pageTitle}>Let's get Jessica's documents</h1>
                 <p className={styles.pageSubtitle}>Gather your client's documents from the checklist, and import them all at once.</p>
               </div>
 
@@ -406,7 +405,7 @@ export default function OpenReturnPage() {
           {step === 3 && (
             <div className={styles.contentArea}>
               <div className={styles.pageHeading}>
-                <h1 className={styles.pageTitle}>Let's get Jordan's documents</h1>
+                <h1 className={styles.pageTitle}>Let's get Jessica's documents</h1>
                 <p className={styles.pageSubtitle}>Gather your client's documents from the checklist, and import them all at once.</p>
               </div>
 

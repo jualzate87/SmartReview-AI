@@ -8,7 +8,7 @@ export default function SuccessStep() {
       <CircleCheckFill size="xlarge" className={styles.successIcon} />
       <h2 className={styles.heading}>Client and return created</h2>
       <p className={styles.body}>
-        Jordan Wells' 1040 return for Tax Year 2025 is set up and ready to go.
+        Jessica Drake's 1040 return for Tax Year 2025 is set up and ready to go.
       </p>
       <button className={styles.ctaButton}>
         <img src={aiSparkleIcon} alt="" className={styles.ctaIcon} />

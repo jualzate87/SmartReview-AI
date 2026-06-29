@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/DetailFields.module.css'
 
-// Realistic 1099-INT data for MegaBank
+// Realistic 1099-INT data for Unwavering Financial
 const PAYER_DATA = {
   ein: '94-1234567',
-  name: 'MegaBank, N.A.',
+  name: 'Unwavering Financial, N.A.',
   street: '1 Financial Plaza, Suite 400',
   city: 'San Francisco',
   state: 'CA',
@@ -15,16 +15,16 @@ const PAYER_DATA = {
 
 const RECIPIENT_DATA = {
   ssn: '111-11-1111',
-  name: 'Jordan Wells',
+  name: 'Jessica Drake',
   street: '333 Easy Street',
   city: 'Middlefield',
   state: 'CA',
   zip: '98756',
 }
 
-// Form 1099-INT boxes — realistic values matching the 1040 line 2b (4,535 total)
+// Form 1099-INT boxes — Jessica Drake values
 const FORM_DATA = {
-  box1_interest:        '4,500',   // Box 1 — Interest income (main amount)
+  box1_interest:        '1,986',   // Box 1 — Interest income (main amount)
   box2_earlyPenalty:    '0',       // Box 2 — Early withdrawal penalty
   box3_usBonds:         '35',      // Box 3 — Interest on U.S. Savings Bonds & T-bills
   box4_fedTaxWithheld:  '0',       // Box 4 — Federal income tax withheld
@@ -37,7 +37,7 @@ const FORM_DATA = {
   box11_bondPremium:    '0',       // Box 11 — Bond premium
   box13_stateTaxId:     'CA-87654321',
   box14_stateTax:       '0',
-  box15_stateIncome:    '4,500',
+  box15_stateIncome:    '1,986',
 }
 
 interface DetailFields1099Props {
@@ -47,10 +47,11 @@ interface DetailFields1099Props {
   fieldValues?: { withholding: number; box12: number; taxableInterest: number; qualifiedDivs: number }
   onFieldValueChange?: (key: 'withholding' | 'box12' | 'taxableInterest' | 'qualifiedDivs', value: number) => void
   onMarkReviewed?: (field: string) => void
+  onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
 }
 
-export default function DetailFields1099({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, reviewedFields }: DetailFields1099Props) {
+export default function DetailFields1099({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields }: DetailFields1099Props) {
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -87,7 +88,7 @@ export default function DetailFields1099({ selectedField, highlightMode = 'blue'
     <div className={styles.container}>
       {/* Page header */}
       <div className={styles.pageHeader}>
-        <h2 className={styles.title}>Details: Interest Income (1099-INT) — MegaBank</h2>
+        <h2 className={styles.title}>Details: Interest Income (1099-INT) — Unwavering Financial</h2>
       </div>
 
       <div className={styles.inputContainer}>

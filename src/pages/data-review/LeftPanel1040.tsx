@@ -10,7 +10,7 @@ interface LeftPanel1040Props {
   selectedField?: string | null
   onFieldClick?: (fieldName: string | null) => void
   total1a?: number
-  wages?: { bingEquipment: number; techCircle: number }
+  wages?: { techCircle: number }
   /** When true: clicking a field shows YoY badge, not blue popover */
   yoyExpanded?: boolean
   reviewedFields?: Set<string>
@@ -112,7 +112,7 @@ export default function LeftPanel1040({
   fieldValues,
   onAddFieldNote,
 }: LeftPanel1040Props) {
-  // Derived 1040 values — Jordan Wells' return (TY 2025)
+  // Derived 1040 values — Jessica Drake's return (TY 2025)
   const taxableInterest = fieldValues?.taxableInterest ?? 4535
   const qualifiedDivs   = fieldValues?.qualifiedDivs   ?? 45
   const withholding1040 = fieldValues?.withholding      ?? 19800
@@ -671,11 +671,11 @@ export default function LeftPanel1040({
             <div className={styles.infoRow}>
               <div className={styles.infoField} style={{ flex: 2 }}>
                 <span className={styles.infoLabel}>Your first name and middle initial</span>
-                <span className={styles.infoValue}>Jordan</span>
+                <span className={styles.infoValue}>Jessica</span>
               </div>
               <div className={styles.infoField} style={{ flex: 2 }}>
                 <span className={styles.infoLabel}>Last name</span>
-                <span className={styles.infoValue}>Wells</span>
+                <span className={styles.infoValue}>Drake</span>
               </div>
               <div className={styles.infoField}>
                 <span className={styles.infoLabel}>Your social security number</span>

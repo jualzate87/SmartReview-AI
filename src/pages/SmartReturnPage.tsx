@@ -58,8 +58,8 @@ export default function SmartReturnPage() {
         <div className={openStyles.returnSubHeader}>
           <div className={openStyles.returnSubHeaderLeft}>
             <div className={openStyles.clientName}>
-              <span className={openStyles.clientNameText}>Jordan</span>
-              <span className={openStyles.clientNameText}>Wells</span>
+              <span className={openStyles.clientNameText}>Jessica</span>
+              <span className={openStyles.clientNameText}>Drake</span>
             </div>
             <div className={openStyles.lockIcon}><Lock size="small" /></div>
             <button className={openStyles.clientProfileBtn}>

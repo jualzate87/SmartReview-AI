@@ -17,11 +17,11 @@ import QuestionnairePane from './QuestionnairePane'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
-// 6 total items across all 4 categories (wages + taxableInterest in YoY, plus 4 others)
+// 6 total items across all categories
 const TOTAL_REVIEW_ITEMS = 6
 
 // Ordered list of issue keys for guided "Next" navigation
-const GUIDED_ORDER = ['wages', 'taxableInterest', 'scanQuality', 'irsCompliance', 'qualifiedDivs', 'earlyWithdrawal'] as const
+const GUIDED_ORDER = ['w2Box12', 'w2Ein', 'divCollectibles', 'divNonDiv', 'wagesConfidence', 'capitalGainNew'] as const
 type IssueKey = typeof GUIDED_ORDER[number]
 
 interface AgentReportPaneProps {
@@ -36,8 +36,8 @@ interface AgentReportPaneProps {
   onSubViewChange?: (subView: 'overview' | 'yoyDetail') => void
   embedded?: boolean
   total1a?: number
-  wages?: { bingEquipment: number; techCircle: number }
-  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1' | 'prior-1040', subTab?: 'bingEquipment' | 'techCircle', field?: string) => void
+  wages?: { techCircle: number }
+  onNavigateToTab?: (tab: 'w2s' | '1099-divs' | '1099-ints' | 'k1' | 'prior-1040', subTab?: 'techCircle', field?: string) => void
   /** Highlight a 1040 field without leaving the agent panel */
   onHighlightField?: (field: string | null) => void
   /** Live field values for inline editing */
@@ -46,10 +46,8 @@ interface AgentReportPaneProps {
 }
 
 const REPORT_CARDS = [
-  { label: 'YoY analysis',          keys: ['wages', 'taxableInterest'],          badgeColor: 'red'  as const, position: 'first' },
-  { label: 'Scan quality & inputs', keys: ['scanQuality'],                        badgeColor: 'red'  as const, position: 'middle' },
-  { label: 'IRS compliance',        keys: ['irsCompliance'],                      badgeColor: 'red'  as const, position: 'middle' },
-  { label: 'Credits & deductions',  keys: ['qualifiedDivs', 'earlyWithdrawal'],  badgeColor: 'blue' as const, position: 'last' },
+  { label: 'Scan quality & inputs', keys: ['w2Box12', 'w2Ein', 'divCollectibles', 'divNonDiv', 'wagesConfidence'], badgeColor: 'red'  as const, position: 'first' },
+  { label: 'YoY analysis',          keys: ['capitalGainNew'],                                                       badgeColor: 'red'  as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -59,170 +57,159 @@ const CARD_ICONS = [
   <img src={taxesAndCreditsIcon} alt="" width={20} height={20} />,
 ]
 
-// ── YoY Finding: Wages +18% ──────────────────────────────────────────────
-const WAGES_ISSUE = {
-  issueKey: 'wages',
-  dotColor: 'orange' as const,
-  title: 'W-2 wages up 18% year-over-year',
-  summary: 'Combined W-2 wages are $124,304 for 2024 — an 18% increase over the prior year total of $105,000. Bing Equipment ($60,000) and Tech Circle ($64,304) are the two sources. The increase is moderate and likely reflects regular pay, but worth confirming no employer changes occurred.',
-  taxImpact: 'At Jordan\'s marginal rate (~22%), the additional $19,304 in wage income adds approximately $4,247 in federal tax compared to last year.',
-  rootCause: 'Bing Equipment wages dropped slightly compared to the prior year. Tech Circle wages rose by ~$1,304. The overall increase is driven by Tech Circle compensation.',
-  tableRows: [
-    { label: 'Bing Equipment (Box 1)', cols: ['$60,000',  '$82,000',  '−$22,000', '−27%'], badge: 'orange' as const, total: false },
-    { label: 'Tech Circle (Box 1)',    cols: ['$64,304',  '$23,000',  '+$41,304',  '+180%'], badge: 'red'    as const, total: false },
-    { label: 'Total wages',            cols: ['$124,304', '$105,000', '+$19,304',  '+18%'],  badge: 'orange' as const, total: true  },
-  ],
-  tableHeaders: ['Source', '2024', '2023', 'Change', ''],
-  suggestedActions: [
-    'Confirm both W-2 Box 1 amounts against the source documents.',
-    'Ask Jordan whether employment at Bing Equipment or Tech Circle changed during 2024.',
-    'Verify no additional W-2s are missing from the import.',
-  ],
-  category: 'YoY analysis',
-  viewSourceLabel: 'View W-2s',
-  viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'bingEquipment' as const,
-  viewSourceField: 'wages',
-}
+// ── Jessica Drake Issues ──────────────────────────────────────────────────
 
-// ── YoY Finding: Taxable Interest +224% ──────────────────────────────────
-const TAXABLE_INTEREST_ISSUE = {
-  issueKey: 'taxableInterest',
+const W2_BOX12_ISSUE = {
+  issueKey: 'w2Box12',
   dotColor: 'red' as const,
-  title: 'Taxable interest up 224% year-over-year',
-  summary: 'MegaBank 1099-INT shows $4,535 in taxable interest (Box 1) — a 224% increase vs. the prior year figure of $1,400. This is a significant jump that strongly warrants confirmation.',
-  taxImpact: 'At Jordan\'s marginal rate (~22%), the additional $3,135 in interest income adds approximately $690 in federal tax compared to last year. The total interest income of $4,535 flows to Form 1040 line 2b.',
-  rootCause: 'The large increase likely reflects a new high-yield savings account, a CD opened or matured during 2024, or a significantly larger account balance. Box 3 (U.S. Savings Bond interest, $35) also contributes to line 2b.',
+  title: 'W-2 Box 12 not imported',
+  category: 'Scan quality & inputs',
+  summary: 'Box 12 was not captured during import. Code and amount must be entered manually.',
+  taxImpact: 'Box 12 codes can affect pre-tax deductions (e.g., 401k, HSA). If Box 12 contains a deferral amount, taxable income may be overstated until the field is populated.',
+  rootCause: 'The Box 12 section on the Tech Circle W-2 was not recognized during OCR. The field was left blank in the imported data.',
   tableRows: [
-    { label: 'Box 1 (Interest income)', cols: ['$4,500', '$1,365', '+$3,135', '+229%'], badge: 'red'    as const, total: false },
-    { label: 'Box 3 (U.S. Bond int.)',  cols: ['$35',    '$35',    '$0',      '—'   ], badge: undefined,          total: false },
-    { label: 'Line 2b total',           cols: ['$4,535', '$1,400', '+$3,135', '+224%'], badge: 'red'    as const, total: true  },
+    { label: 'Box 12 (Code)', cols: ['—', 'Required', '—'], badge: 'red' as const, total: false },
   ],
-  tableHeaders: ['Field', '2024', '2023', 'Change', ''],
+  tableHeaders: ['Field', 'Imported', 'Status', ''],
   suggestedActions: [
-    'Confirm the $4,500 Box 1 amount against the MegaBank 1099-INT source document.',
-    'Ask Jordan whether a new savings account, high-yield account, or CD was opened in 2024.',
-    'Confirm no additional 1099-INT documents are missing from the import.',
+    'Open the Tech Circle W-2 in the source document panel.',
+    'Locate Box 12 and enter the Code and Amount manually.',
+    'Save the value — it flows automatically to the return.',
   ],
-  category: 'YoY analysis',
-  viewSourceLabel: 'View 1099-INT',
-  viewSourceTab: '1099-ints' as const,
-  viewSourceSubTab: undefined,
-  viewSourceField: 'taxableInterest',
-}
-
-// ── Scan Quality: Tech Circle W-2 Box 12 (401k) ──────────────────────────
-// Completely different field from YoY (which is wages/Box 1)
-const SCAN_QUALITY_ISSUE = {
-  issueKey: 'scanQuality',
-  dotColor: 'red' as const,
-  title: 'Unreadable field — Tech Circle W-2',
-  summary: 'Box 12 (Code D — 401k deferral) on the Tech Circle W-2 could not be read with confidence. The scanned value of $5,000 may be incorrect. This field affects pre-tax deductions and taxable income.',
-  taxImpact: 'If the 401k contribution is understated, Jordan\'s taxable income may be overstated by up to the correct contribution amount. Each additional $1,000 in 401k deferrals reduces taxable income by $1,000 — saving approximately $220 in taxes.',
-  rootCause: 'Box 12 on the Tech Circle W-2 is partially obscured by a fold in the uploaded document, reducing OCR accuracy on that field specifically.',
-  tableRows: [
-    { label: 'Box 12 (Code D 401k)', cols: ['$5,000',  '$5k–$23k', '68%'], badge: 'red'  as const, total: false },
-    { label: 'Box 1 (Wages)',        cols: ['$64,304', 'N/A',      '96%'], badge: 'grey' as const, total: false },
-  ],
-  tableHeaders: ['Field', 'Scanned', 'Typical range', 'Confidence'],
-  suggestedActions: [
-    'Open the Tech Circle W-2 in the document panel and locate Box 12 (Code D).',
-    'Compare the printed value to the scanned amount of $5,000.',
-    'If incorrect, update the field — the corrected amount flows automatically to Schedule 1.',
-  ],
-  category: 'Scan quality',
   viewSourceLabel: 'View Tech Circle W-2',
   viewSourceTab: 'w2s' as const,
   viewSourceSubTab: 'techCircle' as const,
   viewSourceField: 'box12',
 }
 
-// ── IRS Compliance: Estimated tax underpayment risk ──────────────────────
-// Genuinely compliance-related: withholding vs. projected liability
-const IRS_COMPLIANCE_ISSUE = {
-  issueKey: 'irsCompliance',
+const W2_EIN_ISSUE = {
+  issueKey: 'w2Ein',
   dotColor: 'red' as const,
-  title: 'Possible underpayment penalty — estimated tax',
-  summary: 'Jordan\'s total federal withholding ($15,987) may be insufficient to cover the estimated tax liability on $134,472 total income. If withholding is less than 90% of current-year liability or 100% of prior-year liability, the IRS may assess an underpayment penalty.',
-  taxImpact: 'Estimated tax on $119,872 taxable income is approximately $22,200 (2024 tax brackets, single filer). Withholding is ~72% of estimated liability — below the 90% safe harbor threshold. Potential penalty: $200–$400.',
-  rootCause: 'Bing Equipment withheld $10,000 and Tech Circle withheld $5,987 — a combined $15,987. With total income of $134,472, the effective withholding rate is approximately 12%, which may fall short of the required amounts.',
+  title: 'W-2 EIN not found',
+  category: 'Scan quality & inputs',
+  summary: 'Employer EIN not found in the document. Required for e-filing — enter manually.',
+  taxImpact: 'A missing EIN will prevent e-filing. The return cannot be submitted electronically until this field is populated.',
+  rootCause: 'The EIN field on the Tech Circle W-2 was not captured during import. This may be due to scan quality or document formatting.',
   tableRows: [
-    { label: 'Bing Equipment (Box 2)', cols: ['$10,000', '≥$13,188', '-$3,188'], badge: undefined,           total: false },
-    { label: 'Tech Circle (Box 2)',    cols: ['$5,987',  '≥$6,792',  '-$805'  ], badge: undefined,           total: false },
-    { label: 'Total withheld',         cols: ['$15,987', '≥$19,980', '-$3,993'], badge: 'red' as const,      total: true  },
+    { label: 'Employer EIN (Box b)', cols: ['—', 'Required', '—'], badge: 'red' as const, total: false },
   ],
-  tableHeaders: ['Source', 'Withheld', '90% safe harbor', 'Gap'],
+  tableHeaders: ['Field', 'Imported', 'Status', ''],
   suggestedActions: [
-    'Confirm both W-2 Box 2 amounts against the source documents.',
-    'Calculate Jordan\'s estimated 2024 tax liability to confirm whether withholding meets the 90% safe harbor.',
-    'If withholding is insufficient, advise Jordan about Form 2210 and potential penalty.',
+    'Open the Tech Circle W-2 and locate Box b (Employer identification number).',
+    'Enter the EIN manually in the Employer Information section.',
+    'Verify it matches the printed value on the source document.',
   ],
-  category: 'IRS compliance',
-  viewSourceLabel: 'View W-2 withholding',
+  viewSourceLabel: 'View Tech Circle W-2',
   viewSourceTab: 'w2s' as const,
-  viewSourceSubTab: 'bingEquipment' as const,
-  viewSourceField: 'withholding',
+  viewSourceSubTab: 'techCircle' as const,
+  viewSourceField: 'wages',
 }
 
-// ── Credits & Deductions: 2 items ─────────────────────────────────────────
-const CREDITS_ITEMS = [
-  {
-    issueKey: 'qualifiedDivs',
-    dotColor: 'blue' as const,
-    title: 'Qualified dividends — confirm 0% tax rate eligibility',
-    summary: 'Jordan\'s Citigroup 1099-DIV shows $20.10 in qualified dividends (Box 1b). Qualified dividends are taxed at preferential rates (0%, 15%, or 20%) depending on taxable income.',
-    taxImpact: 'At Jordan\'s estimated taxable income (~$119,872), qualified dividends are taxed at 15% — not 0%. Tax on $20.10 is approximately $3. No change needed, but worth confirming the holding period qualifies.',
-    rootCause: 'Ordinary dividends are $31.24 (Box 1a); qualified portion is $20.10 (Box 1b). Both scanned at 94% confidence from the Citigroup 1099-DIV.',
-    tableRows: [
-      { label: 'Box 1a (Ordinary divs)', cols: ['$31.24', 'Ordinary', '~$7'], badge: undefined,         total: false },
-      { label: 'Box 1b (Qualified divs)', cols: ['$20.10', '15%',      '~$3'], badge: 'green' as const, total: true  },
-    ],
-    tableHeaders: ['Field', 'Amount', 'Rate', 'Est. tax'],
-    suggestedActions: [
-      'Confirm the qualified dividend amount ($20.10) against the Citigroup 1099-DIV Box 1b.',
-      'Confirm Jordan held the underlying shares for more than 60 days (required for qualified treatment).',
-      'No tax change expected — document the review.',
-    ],
-    category: 'Credits & deductions',
-    viewSourceLabel: 'View 1099-DIV',
-    viewSourceTab: '1099-divs' as const,
-    viewSourceSubTab: undefined,
-    viewSourceField: 'qualifiedDivs',
-  },
-  {
-    issueKey: 'earlyWithdrawal',
-    dotColor: 'blue' as const,
-    title: 'Early withdrawal penalty — confirm $0',
-    summary: 'MegaBank 1099-INT Box 2 (early withdrawal penalty) was scanned as $0. If Jordan broke a CD or time-deposit account early in 2024, a penalty may have been assessed — which is deductible and reduces taxable income.',
-    taxImpact: 'If a penalty was incorrectly captured as $0, Jordan may be missing a deduction. Each $100 in penalty reduces taxable income by $100, saving approximately $22 in taxes at Jordan\'s marginal rate.',
-    rootCause: 'Box 2 on the MegaBank 1099-INT shows $0. Common for standard savings accounts. Verify with Jordan that no time-deposit was broken early in 2024.',
-    tableRows: [
-      { label: 'Box 1 (Interest)',        cols: ['$4,500', '$4,500', '✓'],   badge: 'green' as const, total: false },
-      { label: 'Box 2 (Early penalty)',   cols: ['$0',     'Confirm', '?'],  badge: 'orange' as const, total: false },
-    ],
-    tableHeaders: ['Field', 'Scanned', 'Expected', 'Status'],
-    suggestedActions: [
-      'Open the MegaBank 1099-INT and confirm Box 2 shows $0.',
-      'Ask Jordan whether any CDs or time-deposit accounts were closed early in 2024.',
-      'If a penalty was assessed, enter the amount — it flows to Schedule 1 as a deduction.',
-    ],
-    category: 'Credits & deductions',
-    viewSourceLabel: 'View 1099-INT',
-    viewSourceTab: '1099-ints' as const,
-    viewSourceSubTab: undefined,
-    viewSourceField: 'earlyWithdrawal',
-  },
-]
+const DIV_COLLECTIBLES_ISSUE = {
+  issueKey: 'divCollectibles',
+  dotColor: 'red' as const,
+  title: '1099-DIV Box 2d empty',
+  category: 'Scan quality & inputs',
+  summary: 'Collectibles (28%) gain not imported — verify source document.',
+  taxImpact: 'If collectibles gain exists and was not captured, income may be understated. Collectibles gains are taxed at a maximum 28% rate.',
+  rootCause: 'Box 2d on the Unwavering Financial 1099-DIV was blank or not recognized during import.',
+  tableRows: [
+    { label: 'Box 2d (Collectibles 28% gain)', cols: ['—', 'Verify', '?'], badge: 'orange' as const, total: false },
+  ],
+  tableHeaders: ['Field', 'Imported', 'Status', ''],
+  suggestedActions: [
+    'Open the Unwavering Financial 1099-DIV and check Box 2d.',
+    'If a value exists, enter it manually.',
+    'If blank on the source document, no action needed.',
+  ],
+  viewSourceLabel: 'View 1099-DIV',
+  viewSourceTab: '1099-divs' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'qualifiedDivs',
+}
+
+const DIV_NONDIV_ISSUE = {
+  issueKey: 'divNonDiv',
+  dotColor: 'red' as const,
+  title: '1099-DIV Box 3 empty',
+  category: 'Scan quality & inputs',
+  summary: 'Nondividend distributions not imported — verify source document.',
+  taxImpact: 'Nondividend distributions (Box 3) are a return of capital — generally not taxable but reduce cost basis. If present and not captured, basis calculations may be affected.',
+  rootCause: 'Box 3 on the Unwavering Financial 1099-DIV was not captured during import.',
+  tableRows: [
+    { label: 'Box 3 (Nondividend distributions)', cols: ['—', 'Verify', '?'], badge: 'orange' as const, total: false },
+  ],
+  tableHeaders: ['Field', 'Imported', 'Status', ''],
+  suggestedActions: [
+    'Open the Unwavering Financial 1099-DIV and check Box 3.',
+    'If a value exists, enter it and note the basis impact.',
+    'If blank on the source document, no action needed.',
+  ],
+  viewSourceLabel: 'View 1099-DIV',
+  viewSourceTab: '1099-divs' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'ordinaryDivs',
+}
+
+const WAGES_CONFIDENCE_ISSUE = {
+  issueKey: 'wagesConfidence',
+  dotColor: 'red' as const,
+  title: 'Wages low confidence',
+  category: 'Scan quality',
+  summary: 'W-2 wages read at 72% confidence. Verify Box 1 matches source document ($118,940).',
+  taxImpact: 'If wages are misread, taxable income will be incorrect. At Jessica\'s marginal rate, each $1,000 error changes tax liability by approximately $240.',
+  rootCause: 'The scan of the Tech Circle W-2 returned a lower-than-normal confidence score for Box 1. The printed digits may be partially obscured or low contrast.',
+  tableRows: [
+    { label: 'Box 1 (Wages)', cols: ['$118,940', '72%', 'Verify'], badge: 'red' as const, total: false },
+  ],
+  tableHeaders: ['Field', 'Scanned value', 'Confidence', 'Action'],
+  suggestedActions: [
+    'Open the Tech Circle W-2 and confirm Box 1 shows $118,940.',
+    'If the printed value differs, correct it in the Wages field.',
+    'Mark as reviewed once confirmed.',
+  ],
+  viewSourceLabel: 'View Tech Circle W-2',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
+  viewSourceField: 'wages',
+}
+
+const CAPITAL_GAIN_NEW_ISSUE = {
+  issueKey: 'capitalGainNew',
+  dotColor: 'orange' as const,
+  title: 'New capital gain this year',
+  category: 'YoY analysis',
+  summary: 'Capital gain of $194,600 is new this year (prior year: $0). Confirm Schedule D is attached.',
+  taxImpact: 'Long-term capital gains at Jessica\'s income level are taxed at 20%. A $194,600 gain adds approximately $38,920 in capital gains tax. Confirm whether gains are short-term (ordinary rates) or long-term.',
+  rootCause: 'No capital gain appeared on the prior year return. This year\'s $194,600 is entirely new and likely reflects asset sales in 2025.',
+  tableRows: [
+    { label: 'Capital gain (2025)', cols: ['$194,600', 'New', '—'],    badge: 'orange' as const, total: false },
+    { label: 'Capital gain (2024)', cols: ['$0',        'Prior year', '—'], badge: undefined,         total: false },
+  ],
+  tableHeaders: ['Field', 'Amount', 'Status', ''],
+  suggestedActions: [
+    'Confirm Schedule D is attached and reflects all 2025 asset sales.',
+    'Ask Jessica whether gains are short-term or long-term.',
+    'Verify the $194,600 figure against brokerage 1099-B statements.',
+  ],
+  viewSourceLabel: 'View 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'capitalGain',
+}
 
 // Maps each issue key to the 1040 field it should highlight
 const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
-  wages:           'wages',
-  taxableInterest: 'taxableInterest',
-  scanQuality:     'box12',
-  irsCompliance:   'withholding',
-  qualifiedDivs:   'qualifiedDivs',
-  earlyWithdrawal: 'taxableInterest',
+  w2Box12:        'wages',
+  w2Ein:          'wages',
+  divCollectibles:'qualifiedDivs',
+  divNonDiv:      'ordinaryDivs',
+  wagesConfidence:'wages',
+  capitalGainNew: 'capitalGain',
 }
+
+// All issues as a flat list for getIssueConfig lookup
+const ALL_ISSUES = [W2_BOX12_ISSUE, W2_EIN_ISSUE, DIV_COLLECTIBLES_ISSUE, DIV_NONDIV_ISSUE, WAGES_CONFIDENCE_ISSUE, CAPITAL_GAIN_NEW_ISSUE]
 
 export default function AgentReportPane({
   onClose,
@@ -235,7 +222,7 @@ export default function AgentReportPane({
   initialSubView,
   onSubViewChange,
   embedded = false,
-  total1a = 124265,
+  total1a = 118940,
   wages,
   onNavigateToTab,
   onHighlightField,
@@ -282,12 +269,7 @@ export default function AgentReportPane({
     // Highlight the corresponding 1040 field when opening any issue detail
     const field = ISSUE_FIELD[key as IssueKey] ?? null
     onHighlightField?.(field)
-    if (key === 'wages') {
-      setYoyDetailOpen(true)
-      onSubViewChange?.('yoyDetail')
-    } else {
-      setIssueDetailOpen(key)
-    }
+    setIssueDetailOpen(key)
   }
 
   const handleCloseYoyDetail = () => {
@@ -349,11 +331,7 @@ export default function AgentReportPane({
   }
 
   const getIssueConfig = (key: string) => {
-    if (key === WAGES_ISSUE.issueKey) return WAGES_ISSUE
-    if (key === TAXABLE_INTEREST_ISSUE.issueKey) return TAXABLE_INTEREST_ISSUE
-    if (key === SCAN_QUALITY_ISSUE.issueKey) return SCAN_QUALITY_ISSUE
-    if (key === IRS_COMPLIANCE_ISSUE.issueKey) return IRS_COMPLIANCE_ISSUE
-    return CREDITS_ITEMS.find(c => c.issueKey === key) ?? null
+    return ALL_ISSUES.find(i => i.issueKey === key) ?? null
   }
 
   const activeIssue = issueDetailOpen ? getIssueConfig(issueDetailOpen) : null
@@ -419,16 +397,6 @@ export default function AgentReportPane({
                   </div>
                   <span className={styles.confidenceBadge} data-level="high">100%</span>
                 </button>
-                <button className={styles.docRow} onClick={() => onNavigateToTab?.('w2s', 'bingEquipment')}>
-                  <div className={styles.docRowLeft}>
-                    <div className={styles.docFileIcon}><Document size="medium" /></div>
-                    <div className={styles.docMeta}>
-                      <span className={styles.docName}>W2-BingEquipment.pdf</span>
-                      <span className={styles.docSub}>W-2 · 2 pages</span>
-                    </div>
-                  </div>
-                  <span className={styles.confidenceBadge} data-level="low">72%</span>
-                </button>
                 <button className={styles.docRow} onClick={() => onNavigateToTab?.('w2s', 'techCircle')}>
                   <div className={styles.docRowLeft}>
                     <div className={styles.docFileIcon}><Document size="medium" /></div>
@@ -437,13 +405,13 @@ export default function AgentReportPane({
                       <span className={styles.docSub}>W-2 · 1 page</span>
                     </div>
                   </div>
-                  <span className={styles.confidenceBadge} data-level="medium">68%</span>
+                  <span className={styles.confidenceBadge} data-level="low">72%</span>
                 </button>
                 <button className={styles.docRow} onClick={() => onNavigateToTab?.('1099-ints')}>
                   <div className={styles.docRowLeft}>
                     <div className={styles.docFileIcon}><Document size="medium" /></div>
                     <div className={styles.docMeta}>
-                      <span className={styles.docName}>1099-INT-MegaBank.pdf</span>
+                      <span className={styles.docName}>1099-INT-UnwaveringFinancial.pdf</span>
                       <span className={styles.docSub}>1099-INT · 1 page</span>
                     </div>
                   </div>
@@ -453,7 +421,7 @@ export default function AgentReportPane({
                   <div className={styles.docRowLeft}>
                     <div className={styles.docFileIcon}><Document size="medium" /></div>
                     <div className={styles.docMeta}>
-                      <span className={styles.docName}>1099-DIV-Citigroup.pdf</span>
+                      <span className={styles.docName}>1099-DIV-UnwaveringFinancial.pdf</span>
                       <span className={styles.docSub}>1099-DIV · 1 page</span>
                     </div>
                   </div>
@@ -533,168 +501,33 @@ export default function AgentReportPane({
                   <ChevronDown size="small" className={`${styles.chevron} ${expandedCard === card.label ? styles.chevronUp : ''}`} />
                 </button>
 
-                {/* ── YoY analysis findings ── */}
-                {card.label === 'YoY analysis' && expandedCard === 'YoY analysis' && (() => {
-                  const wagesSignOff  = reviewedFields.get('wages')
-                  const wagesReviewed = !!wagesSignOff
-                  const intSignOff    = reviewedFields.get('taxableInterest')
-                  const intReviewed   = !!intSignOff
-                  return (
-                    <div className={styles.findingCard} style={{ gap: 12 }}>
-                      {/* Finding 1 — Wages +18% */}
-                      <button className={`${styles.findingInner} ${wagesReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD['wages'] ?? null)}>
-                        <div className={styles.findingTitleRow}>
-                          {wagesReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
-                          <span className={styles.findingTitle}>W-2 wages up 18% year-over-year</span>
-                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('wages') + 1} of {GUIDED_ORDER.length}</span>
-                          {wagesReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
-                        </div>
-                        {wagesSignOff && (
-                          <span className={styles.findingSignOff}>{wagesSignOff.by} · {wagesSignOff.at}</span>
-                        )}
-                        <p className={styles.findingBody}>
-                          Combined W-2 wages are $124,304 — up $19,304 (+18%) vs. prior year ($105,000). Bing Equipment and Tech Circle are the two sources.
-                        </p>
-                        <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                          <Tooltip text="Open the W-2 documents side-by-side to verify the reported wage amounts">
-                            <Button priority="secondary" size="small" onClick={() => onViewW2?.('overview')}>
-                              <Panel size="small" /> View sources
-                            </Button>
-                          </Tooltip>
-                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail('wages')}>See details <ChevronRight size="small" /></Button>
-                          </Tooltip>
-                        </div>
-                      </button>
-
-                      {/* Finding 2 — Taxable interest +42% */}
-                      <button className={`${styles.findingInner} ${intReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD['taxableInterest'] ?? null)}>
-                        <div className={styles.findingTitleRow}>
-                          {intReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
-                          <span className={styles.findingTitle}>Taxable interest up 224% year-over-year</span>
-                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('taxableInterest') + 1} of {GUIDED_ORDER.length}</span>
-                          {intReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
-                        </div>
-                        {intSignOff && (
-                          <span className={styles.findingSignOff}>{intSignOff.by} · {intSignOff.at}</span>
-                        )}
-                        <p className={styles.findingBody}>
-                          MegaBank 1099-INT shows $4,535 in interest income — a 224% jump vs. prior year ($1,400). Likely a new high-yield account or CD.
-                        </p>
-                        <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                          <Tooltip text="Open the MegaBank 1099-INT to verify Box 1 interest income">
-                            <Button priority="secondary" size="small" onClick={() => onNavigateToTab?.('1099-ints', undefined, 'taxableInterest')}>
-                              <Panel size="small" /> View source
-                            </Button>
-                          </Tooltip>
-                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail('taxableInterest')}>See details <ChevronRight size="small" /></Button>
-                          </Tooltip>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })()}
-
-                {/* ── Scan quality finding — Tech Circle W-2 Box 12 ── */}
-                {card.label === 'Scan quality & inputs' && expandedCard === 'Scan quality & inputs' && (() => {
-                  const signOff = reviewedFields.get(SCAN_QUALITY_ISSUE.issueKey)
-                  const isReviewed = !!signOff
-                  return (
-                    <div className={styles.findingCard}>
-                      <button className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[SCAN_QUALITY_ISSUE.issueKey as IssueKey] ?? null)}>
-                        <div className={styles.findingTitleRow}>
-                          {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
-                          <span className={styles.findingTitle}>Unreadable field — Tech Circle W-2</span>
-                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('scanQuality') + 1} of {GUIDED_ORDER.length}</span>
-                          {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
-                        </div>
-                        {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
-                        <p className={styles.findingBody}>
-                          Box 12 (401k deferral) scanned at 68% confidence. The captured amount of $5,000 may be incorrect.
-                        </p>
-                        <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                          <Tooltip text="Open the Tech Circle W-2 to inspect the low-confidence scan of Box 12">
-                            <Button priority="secondary" size="small" onClick={() => onNavigateToTab?.('w2s', 'techCircle', 'box12')}>
-                              <Panel size="small" /> View source
-                            </Button>
-                          </Tooltip>
-                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail(SCAN_QUALITY_ISSUE.issueKey)}>See details <ChevronRight size="small" /></Button>
-                          </Tooltip>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })()}
-
-                {/* ── IRS Compliance — underpayment risk ── */}
-                {card.label === 'IRS compliance' && expandedCard === 'IRS compliance' && (() => {
-                  const signOff = reviewedFields.get(IRS_COMPLIANCE_ISSUE.issueKey)
-                  const isReviewed = !!signOff
-                  return (
-                    <div className={styles.findingCard}>
-                      <button className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[IRS_COMPLIANCE_ISSUE.issueKey as IssueKey] ?? null)}>
-                        <div className={styles.findingTitleRow}>
-                          {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} />}
-                          <span className={styles.findingTitle}>Possible underpayment penalty</span>
-                          <span className={styles.issueChip}>{GUIDED_ORDER.indexOf('irsCompliance') + 1} of {GUIDED_ORDER.length}</span>
-                          {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
-                        </div>
-                        {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
-                        <p className={styles.findingBody}>
-                          Total withholding ($15,987) may be below the 90% safe harbor threshold for Jordan's estimated liability.
-                        </p>
-                        <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                          <Tooltip text="Open the Bing Equipment W-2 to verify withholding amounts in Box 2">
-                            <Button priority="secondary" size="small" onClick={() => onNavigateToTab?.('w2s', 'bingEquipment', 'withholding')}>
-                              <Panel size="small" /> View source
-                            </Button>
-                          </Tooltip>
-                          <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
-                            <Button priority="primary" size="small" onClick={() => openDetail(IRS_COMPLIANCE_ISSUE.issueKey)}>See details <ChevronRight size="small" /></Button>
-                          </Tooltip>
-                        </div>
-                      </button>
-                    </div>
-                  )
-                })()}
-
-                {/* ── Credits & Deductions — 2 items ── */}
-                {card.label === 'Credits & deductions' && expandedCard === 'Credits & deductions' && (
+                {/* ── Issue findings — rendered from ALL_ISSUES filtered to this card's keys ── */}
+                {expandedCard === card.label && (
                   <div className={styles.findingCard} style={{ gap: 12 }}>
-                    {CREDITS_ITEMS.map((item) => {
-                      const signOff = reviewedFields.get(item.issueKey)
+                    {card.keys.map((key) => {
+                      const issue = getIssueConfig(key)
+                      if (!issue) return null
+                      const signOff = reviewedFields.get(key)
                       const isReviewed = !!signOff
+                      const issueNum = GUIDED_ORDER.indexOf(key as IssueKey) + 1
                       return (
-                        <button key={item.issueKey} className={styles.findingInner} onClick={() => onHighlightField?.(ISSUE_FIELD[item.issueKey as IssueKey] ?? null)}>
+                        <button key={key} className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null)}>
                           <div className={styles.findingTitleRow}>
-                            {isReviewed
-                              ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span>
-                              : <span className={styles.findingDot} style={{ background: '#205ea3' }} />
-                            }
-                            <span className={styles.findingTitle}>{item.title}</span>
-                            <span className={styles.issueChip}>{GUIDED_ORDER.indexOf(item.issueKey as IssueKey) + 1} of {GUIDED_ORDER.length}</span>
+                            {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
+                            <span className={styles.findingTitle}>{issue.title}</span>
+                            <span className={styles.issueChip}>{issueNum} of {GUIDED_ORDER.length}</span>
                             {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
                           </div>
                           {signOff && <span className={styles.findingSignOff}>{signOff.by} · {signOff.at}</span>}
-                          <p className={styles.findingBody}>
-                            {item.issueKey === 'qualifiedDivs'
-                              ? 'Citigroup 1099-DIV: $20.10 qualified dividends (Box 1b). Confirm tax rate applies.'
-                              : 'MegaBank 1099-INT Box 2 (early penalty) is $0. Confirm no CD was broken early in 2024.'
-                            }
-                          </p>
+                          <p className={styles.findingBody}>{issue.summary}</p>
                           <div className={styles.findingActions} onClick={e => e.stopPropagation()}>
-                            <Tooltip text={item.issueKey === 'qualifiedDivs'
-                              ? 'Open the Citigroup 1099-DIV to confirm Box 1b qualified dividend amounts'
-                              : 'Open the MegaBank 1099-INT to confirm Box 2 early withdrawal penalty'
-                            }>
-                              <Button priority="secondary" size="small" onClick={() => onNavigateToTab?.(item.viewSourceTab, undefined, item.viewSourceField ?? undefined)}>
+                            <Tooltip text={`Open the source document for: ${issue.title}`}>
+                              <Button priority="secondary" size="small" onClick={() => onNavigateToTab?.(issue.viewSourceTab, issue.viewSourceSubTab, issue.viewSourceField)}>
                                 <Panel size="small" /> View source
                               </Button>
                             </Tooltip>
                             <Tooltip text="See the root cause, tax impact, and suggested next steps for this finding">
-                              <Button priority="primary" size="small" onClick={() => openDetail(item.issueKey)}>See details <ChevronRight size="small" /></Button>
+                              <Button priority="primary" size="small" onClick={() => openDetail(key)}>See details <ChevronRight size="small" /></Button>
                             </Tooltip>
                           </div>
                         </button>

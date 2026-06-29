@@ -41,7 +41,7 @@ export default function SmartReturnHeader({ activeTab = 'smartreturn' }: SmartRe
       {/* ── Row 2: Client sub-header 63px ── */}
       <div className={styles.row2}>
         <div className={styles.row2Left}>
-          <div className={styles.clientName}>Jordan<br />Wells</div>
+          <div className={styles.clientName}>Jessica<br />Drake</div>
           <Lock size="small" className={styles.lockIcon} />
           <button className={styles.clientProfileBtn}>
             <PersonThree size="small" />

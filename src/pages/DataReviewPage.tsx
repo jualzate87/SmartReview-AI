@@ -4,7 +4,6 @@ import { Button } from '@ids-ts/button'
 import '@ids-ts/button/dist/main.css'
 import NotesPane from './data-review/NotesPane'
 import type { Note } from './data-review/NotesPane'
-import PriorYear1040Panel from './data-review/PriorYear1040Panel'
 
 function VerticalGripIcon() {
   return (
@@ -23,14 +22,13 @@ import DocumentPreview from './data-review/DocumentPreview'
 import DetailFields from './data-review/DetailFields'
 import DetailFields1099 from './data-review/DetailFields1099'
 import DetailFieldsDiv from './data-review/DetailFieldsDiv'
-import DetailFieldsK1 from './data-review/DetailFieldsK1'
+import PriorYear1040Fields from './data-review/PriorYear1040Fields'
 import AgentReportPane from './data-review/AgentReportPane'
 import AgentLoadingPane from './data-review/AgentLoadingPane'
-import w2BingEquipment from '../assets/w2-bing-equipment.png'
-import w2TechCircle from '../assets/w2-tech-circle.png'
-import img1099Int from '../assets/1099-int-megabank.png'
-import img1099Div from '../assets/1099-div-citigroup.png'
-import imgK1 from '../assets/k1-easy-money.png'
+import w2TechCircle from '../assets/jessica-w2-tech-circle.png'
+import img1040Prior from '../assets/jessica-1040-2024.png'
+import img1099Int from '../assets/jessica-1099-int.jpg'
+import img1099Div from '../assets/jessica-1099-div.jpg'
 import styles from '../styles/data-review/DataReviewPage.module.css'
 import dragStyles from '../styles/data-review/DragHandle.module.css'
 
@@ -39,20 +37,20 @@ export default function DataReviewPage() {
   const [selectedField, setSelectedField] = useState<string | null>(null)
   // Active top tab — Prior Year 1040 is first
   const [activeTopTab, setActiveTopTab] = useState<TopTab>('prior-1040')
-  // Active W-2 sub-tab: 'bingEquipment' | 'techCircle'
-  const [activeSubTab, setActiveSubTab] = useState<'bingEquipment' | 'techCircle'>('bingEquipment')
-  // W-2 wages — drives 1040 line 1a dynamically
-  const [wages, setWages] = useState({ bingEquipment: 60000, techCircle: 64304 })
-  const total1a = wages.bingEquipment + wages.techCircle
+  // Active W-2 sub-tab: only techCircle for Jessica Drake
+  const [activeSubTab, setActiveSubTab] = useState<'techCircle'>('techCircle')
+  // W-2 wages — drives 1040 line 1a dynamically (Jessica Drake: Tech Circle only)
+  const [wages, setWages] = useState({ techCircle: 118940 })
+  const total1a = wages.techCircle
   // Editable source-doc field values — drive downstream 1040 recalculation
   const [fieldValues, setFieldValues] = useState({
-    withholding:     { bingEquipment: 10000, techCircle: 5987 },  // per-employer Box 2; sum → 1040 line 25a
-    box12:           5000,    // Tech Circle Box 12a 401(k)
-    taxableInterest: 4500,    // 1099-INT Box 1
-    qualifiedDivs:   20,      // 1099-DIV Box 1b
+    withholding:     { techCircle: 15840 },  // Box 2; → 1040 line 25a
+    box12:           0,       // Tech Circle Box 12 (not imported)
+    taxableInterest: 1986,    // 1099-INT Box 1
+    qualifiedDivs:   187500,  // 1099-DIV Box 1b
   })
-  const totalWithholding = fieldValues.withholding.bingEquipment + fieldValues.withholding.techCircle
-  const updateField = (key: keyof typeof fieldValues, value: number | { bingEquipment: number; techCircle: number }) =>
+  const totalWithholding = fieldValues.withholding.techCircle
+  const updateField = (key: keyof typeof fieldValues, value: number | { techCircle: number }) =>
     setFieldValues(prev => ({ ...prev, [key]: value }))
   // Left panel width in px when idle (950px default); as % when agent open
   const [leftWidth, setLeftWidth] = useState(50)
@@ -191,6 +189,16 @@ export default function DataReviewPage() {
     setReviewedFields(prev => {
       const next = new Map(prev)
       next.set(fieldName, { by: PREPARER_NAME, at })
+      return next
+    })
+  }
+
+  const handleMarkReviewedBulk = (fieldNames: string[]) => {
+    const now = new Date()
+    const at = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })
+    setReviewedFields(prev => {
+      const next = new Map(prev)
+      fieldNames.forEach(f => { if (!next.has(f)) next.set(f, { by: PREPARER_NAME, at }) })
       return next
     })
   }
@@ -378,7 +386,7 @@ export default function DataReviewPage() {
             onFieldClick={setSelectedField}
             total1a={total1a}
             wages={wages}
-            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail'}
+            yoyExpanded={yoyExpanded || agentSubView === 'yoyDetail' || activeTopTab === 'prior-1040'}
             reviewedFields={reviewedFields}
             checkedFields={checkedFields}
             onToggleChecked={handleToggleChecked}
@@ -403,7 +411,6 @@ export default function DataReviewPage() {
               if (tab === 'w2s' && sourceLabel) {
                 const lc = sourceLabel.toLowerCase()
                 if (lc.includes('tech circle')) setActiveSubTab('techCircle')
-                else if (lc.includes('bing')) setActiveSubTab('bingEquipment')
               }
 
               if (agentView !== 'idle') {
@@ -490,34 +497,34 @@ export default function DataReviewPage() {
                 }}
               />
 
-              {/* Document preview + detail fields (hidden when prior-1040 tab active) */}
-              {activeTopTab !== 'prior-1040' && <div style={{ height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden' }}>
+              {/* Document preview */}
+              <div style={{ height: `${previewHeight}%`, flexShrink: 0, overflow: 'hidden' }}>
                 <DocumentPreview
                   imageSrc={
-                    activeTopTab === '1099-ints' ? img1099Int :
-                    activeTopTab === '1099-divs' ? img1099Div :
-                    activeTopTab === 'k1' ? imgK1 :
-                    activeSubTab === 'techCircle' ? w2TechCircle : w2BingEquipment
+                    activeTopTab === 'prior-1040' ? img1040Prior :
+                    activeTopTab === '1099-ints'  ? img1099Int :
+                    activeTopTab === '1099-divs'  ? img1099Div :
+                    w2TechCircle
                   }
                   alt={
-                    activeTopTab === '1099-ints' ? '1099-INT MegaBank' :
-                    activeTopTab === '1099-divs' ? '1099-DIV Citigroup' :
-                    activeTopTab === 'k1' ? 'K-1 Easy Money Ltd' :
-                    activeSubTab === 'techCircle' ? 'W-2 Tech Circle' : 'W-2 Bing Equipment'
+                    activeTopTab === 'prior-1040' ? 'Form 1040 (2024) — Jessica Drake' :
+                    activeTopTab === '1099-ints'  ? '1099-INT Unwavering Financial' :
+                    activeTopTab === '1099-divs'  ? '1099-DIV Unwavering Financial' :
+                    'W-2 Tech Circle'
                   }
                   selectedField={selectedField}
                   highlightMode={highlightMode}
                   docType={
-                    activeTopTab === '1099-ints' ? '1099-int' :
-                    activeTopTab === '1099-divs' ? '1099-div' :
-                    activeTopTab === 'k1'        ? 'k1'       :
+                    activeTopTab === 'prior-1040' ? '1040' :
+                    activeTopTab === '1099-ints'  ? '1099-int' :
+                    activeTopTab === '1099-divs'  ? '1099-div' :
                     'w2'
                   }
                 />
-              </div>}
+              </div>
 
-              {activeTopTab !== 'prior-1040' && <>
               {/* Up/down drag handle */}
+              <>
               <div className={dragStyles.handleHorizontal} onMouseDown={handleVerticalDrag}>
                 <DotsSix size="small" className={`${dragStyles.handleIcon} ${dragStyles.rotated90}`} />
               </div>
@@ -527,41 +534,40 @@ export default function DataReviewPage() {
                 <DetailFields
                   formTitle="Details: Wages, Salaries, Tips (W-2)"
                   tabs={[
-                    { label: 'Bing Equipment', active: activeSubTab === 'bingEquipment' },
-                    { label: 'Tech circle', active: activeSubTab === 'techCircle' },
+                    { label: 'Tech Circle', active: true },
                   ]}
                   selectedField={selectedField}
                   highlightMode={highlightMode}
                   onFieldSelect={setSelectedField}
                   activeSubTab={activeSubTab}
-                  onSubTabChange={(tab) => setActiveSubTab(tab as 'bingEquipment' | 'techCircle')}
-                  wages={wages}
+                  onSubTabChange={(tab) => setActiveSubTab(tab as 'techCircle')}
+                  wages={{ techCircle: wages.techCircle }}
                   onWageChange={(employer, value) => setWages(prev => ({ ...prev, [employer]: value }))}
                   fieldValues={{ ...fieldValues, withholding: fieldValues.withholding[activeSubTab] }}
                   onFieldValueChange={(key, value) => {
                     if (key === 'withholding' && typeof value === 'number') {
-                      updateField('withholding', { ...fieldValues.withholding, [activeSubTab]: value })
+                      updateField('withholding', { techCircle: value })
                     } else {
                       updateField(key as keyof typeof fieldValues, value as number)
                     }
                   }}
                   onMarkReviewed={handleMarkReviewed}
+                  onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
                     ...(!reviewedFields.has('wages')
                       ? { wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.' }
                       : {}),
                     ...(!reviewedFields.has('box12')
-                      ? { box12: 'Box 12 data was not imported. Enter Code AA amount manually from source W-2.' }
+                      ? { box12: 'Box 12 data was not imported. Enter Code and amount manually from source W-2.' }
                       : {}),
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
-              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} reviewedFields={reviewedFields} />}
-              {activeTopTab === 'k1' && <DetailFieldsK1 />}
-              </>}
-              {activeTopTab === 'prior-1040' && <PriorYear1040Panel />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
+              {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
+              {activeTopTab === 'prior-1040' && <PriorYear1040Fields />}
+              </>
             </div>
 
             {/* Drag handle between left panel and agent panel — only when agent open */}
@@ -633,9 +639,7 @@ export default function DataReviewPage() {
                       fieldValues={{ ...fieldValues, withholding: totalWithholding }}
                       onFieldValueChange={(key, value) => {
                         if (key === 'withholding' && typeof value === 'number') {
-                          // Distribute evenly when edited from agent pane (no per-employer context)
-                          // For now keep existing split proportional
-                          updateField('withholding', { bingEquipment: fieldValues.withholding.bingEquipment, techCircle: value - fieldValues.withholding.bingEquipment })
+                          updateField('withholding', { techCircle: value })
                         } else {
                           updateField(key as keyof typeof fieldValues, value as number)
                         }

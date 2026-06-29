@@ -74,7 +74,7 @@ export default function AgentLoadingPane({ onClose, showReport = false, closing 
                   <img src={intuitAssistIcon} alt="" className={styles.greetingIconImg} />
                 </div>
                 <div className={styles.greetingText}>
-                  <h2 className={styles.greetingTitle}>Hi, Jordan</h2>
+                  <h2 className={styles.greetingTitle}>Hi, Jessica</h2>
                   <p className={styles.greetingSubtext}>
                     We're checking the accuracy and integrity of your return.
                   </p>
