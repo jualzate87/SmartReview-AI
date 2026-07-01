@@ -555,16 +555,14 @@ export default function DataReviewPage() {
                   onMarkReviewedBulk={handleMarkReviewedBulk}
                   reviewedFields={reviewedFields}
                   flaggedFields={{
-                    ...(!reviewedFields.has('wages')
-                      ? { wages: 'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.' }
-                      : {}),
-                    ...(!reviewedFields.has('box12')
-                      ? { box12: 'Box 12 data was not imported. Enter Code and amount manually from source W-2.' }
-                      : {}),
+                    wages:       'Low confidence (72%) — wages may be misread. Verify Box 1 against source W-2.',
+                    withholding: 'Low confidence (85%) — federal withholding is lower than expected. Verify Box 2 against source W-2.',
+                    box12:       'Box 12 not imported — enter code and amount manually from source W-2.',
+                    ein:         'Employer EIN not found in document — required for e-filing. Enter manually.',
                   }}
                 />
               )}
-              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
+              {activeTopTab === '1099-divs' && <DetailFieldsDiv selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} flaggedFields={{ 'divCollectibles': 'Collectibles (28%) gain not imported — review source document and enter if applicable.', 'divNonDiv': 'Nondividend distributions not imported — review source document and enter if applicable.' }} />}
               {activeTopTab === '1099-ints' && <DetailFields1099 selectedField={selectedField} highlightMode={highlightMode} onFieldSelect={setSelectedField} fieldValues={{ ...fieldValues, withholding: totalWithholding }} onFieldValueChange={(key, value) => updateField(key as keyof typeof fieldValues, value)} onMarkReviewed={handleMarkReviewed} onMarkReviewedBulk={handleMarkReviewedBulk} reviewedFields={reviewedFields} />}
               {activeTopTab === 'prior-1040' && <PriorYear1040Fields />}
               </>

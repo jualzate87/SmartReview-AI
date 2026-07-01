@@ -18,59 +18,62 @@ export interface FieldMeta {
   sources?: { label: string; value: number }[]
 }
 
-// Static metadata for each 1040 field
-// Prior values match the 2024 source document exactly
+// Static metadata for each 1040 field — Jessica Drake 2025 return
 export const FIELD_META: Record<string, FieldMeta> = {
   wages: {
     label: 'Wages',
-    prior: 105000,
-    current: 124304,
+    prior: 0,
+    current: 118940,
     sources: [
-      { label: 'Bing Equipment', value: 60000 },
-      { label: 'Tech Circle',    value: 64304 },
+      { label: 'Tech Circle (W-2)', value: 118940 },
     ],
   },
   taxableInterest: {
     label: 'Taxable interest',
-    prior: 1400,
-    current: 4535,
+    prior: 0,
+    current: 1986,
     sources: [
-      { label: 'MegaBank (1099-INT)', value: 4535 },
+      { label: 'Unwavering Financial (1099-INT)', value: 1986 },
     ],
+  },
+  taxExemptInterest: {
+    label: 'Tax-exempt interest',
+    prior: 0,
+    current: 180,
   },
   qualifiedDivs: {
     label: 'Qualified dividends',
     prior: 0,
-    current: 45,
+    current: 187500,
     sources: [
-      { label: 'Citigroup (1099-DIV)', value: 45 },
+      { label: 'Unwavering Financial (1099-DIV)', value: 187500 },
     ],
   },
   ordinaryDivs: {
     label: 'Ordinary dividends',
-    prior: 500,
-    current: 531,
+    prior: 0,
+    current: 331250,
     sources: [
-      { label: 'Citigroup (1099-DIV)', value: 531 },
+      { label: 'Unwavering Financial (1099-DIV)', value: 331250 },
     ],
   },
   capitalGain: {
     label: 'Capital gain / (loss)',
-    prior: 2500,
-    current: 602,
+    prior: 0,
+    current: 194600,
     sources: [
-      { label: 'Schedule D', value: 602 },
+      { label: 'Schedule D', value: 194600 },
     ],
   },
   totalIncome: {
     label: 'Total income',
-    prior: 109400,
-    current: 134476,
+    prior: 0,
+    current: 646776,
   },
   agi: {
     label: 'Adjusted gross income',
-    prior: 109400,
-    current: 134476,
+    prior: 0,
+    current: 646776,
   },
   stdDeduction: {
     label: 'Standard deduction',
@@ -82,24 +85,38 @@ export const FIELD_META: Record<string, FieldMeta> = {
   },
   taxableIncome: {
     label: 'Taxable income',
-    prior: 95550,
-    current: 119876,
+    prior: 0,
+    current: 632176,
   },
   withholding: {
     label: 'Federal income tax withheld',
-    prior: 15987,
-    current: 15987,
+    prior: 0,
+    current: 15840,
     sources: [
-      { label: 'Bing Equipment (W-2)', value: 10000 },
-      { label: 'Tech Circle (W-2)',    value: 5987  },
+      { label: 'Tech Circle (W-2)', value: 15840 },
     ],
   },
+  totalPayments: {
+    label: 'Total payments',
+    prior: 0,
+    current: 40765,
+  },
+  totalTax: {
+    label: 'Total tax',
+    prior: 0,
+    current: 138120,
+  },
+  amountOwed: {
+    label: 'Amount you owe',
+    prior: 0,
+    current: 97355,
+  },
   box12: {
-    label: 'Box 12 — 401(k) contributions',
-    prior: 4800,
-    current: 5000,
+    label: 'Box 12 — Codes',
+    prior: 0,
+    current: 0,
     sources: [
-      { label: 'Bing Equipment (W-2 Box 12)', value: 5000 },
+      { label: 'Tech Circle (W-2 Box 12)', value: 0 },
     ],
   },
 }

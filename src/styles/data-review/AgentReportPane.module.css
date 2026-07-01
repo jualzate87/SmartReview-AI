@@ -459,9 +459,10 @@
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.badgeRed  { background: #db334d; }
-.badgeBlue { background: #205ea3; }
-.badgeGreen { background: #1a8254; }
+.badgeRed    { background: #db334d; }
+.badgeOrange { background: #d68000; }
+.badgeBlue   { background: #205ea3; }
+.badgeGreen  { background: #1a8254; }
 
 /* Active card state */
 .cardActive {

@@ -24,7 +24,7 @@ const RECIPIENT_DATA = {
 
 // Form 1099-INT boxes — Jessica Drake values
 const FORM_DATA = {
-  box1_interest:        '1,986',   // Box 1 — Interest income (main amount)
+  box1_interest:        '3,486',   // Box 1 — deliberately $1,500 more than 1040 line 2b ($1,986) — unflagged discrepancy
   box2_earlyPenalty:    '0',       // Box 2 — Early withdrawal penalty
   box3_usBonds:         '35',      // Box 3 — Interest on U.S. Savings Bonds & T-bills
   box4_fedTaxWithheld:  '0',       // Box 4 — Federal income tax withheld

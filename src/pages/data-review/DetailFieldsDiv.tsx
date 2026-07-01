@@ -47,9 +47,27 @@ interface DetailFieldsDivProps {
   onMarkReviewed?: (field: string) => void
   onMarkReviewedBulk?: (fields: string[]) => void
   reviewedFields?: Map<string, { by: string; at: string }>
+  flaggedFields?: Record<string, string>
 }
 
-export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields }: DetailFieldsDivProps) {
+export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue', onFieldSelect, fieldValues, onFieldValueChange, onMarkReviewed, onMarkReviewedBulk, reviewedFields, flaggedFields = {} }: DetailFieldsDivProps) {
+
+  const ValidationNote = ({ fieldKey }: { fieldKey: string }) => {
+    const issue = flaggedFields[fieldKey]
+    if (!issue) return null
+    const resolved = reviewedFields?.has(fieldKey)
+    return (
+      <div className={styles.validationNote} style={resolved ? { color: '#1a6b35' } : {}}>
+        {resolved ? (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5.5" fill="#1a6b35"/><path d="M3.5 6l1.8 1.8 3.2-3.6" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        ) : (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0, marginTop: 1 }}><circle cx="6" cy="6" r="5.5" fill="#c9500f"/><path d="M6 3.5V6.5" stroke="white" strokeWidth="1.2" strokeLinecap="round"/><circle cx="6" cy="8.5" r="0.6" fill="white"/></svg>
+        )}
+        <span style={resolved ? { textDecoration: 'line-through', opacity: 0.7 } : {}}>{issue}</span>
+      </div>
+    )
+  }
+
   const highlightedRef = useRef<HTMLDivElement>(null)
   const [editingField, setEditingField] = useState<string | null>(null)
   const [draftValue, setDraftValue] = useState('')
@@ -203,14 +221,22 @@ export default function DetailFieldsDiv({ selectedField, highlightMode = 'blue',
           <span className={styles.fieldLabel}>(2c) Section 1202 gain</span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box2c_sec1202} placeholder="—" />
         </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(2d) Collectibles (28%) gain</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box2d_collectibles} placeholder="—" />
+        <div className={`${styles.fieldRow} ${flaggedFields['divCollectibles'] && !reviewedFields?.has('divCollectibles') ? styles.fieldRowHasNote : ''}`}>
+          <span className={`${styles.fieldLabel} ${flaggedFields['divCollectibles'] && !reviewedFields?.has('divCollectibles') ? styles.fieldLabelFlagged : ''}`}>
+            {flaggedFields['divCollectibles'] && !reviewedFields?.has('divCollectibles') && <span className={styles.issueIndicator} />}
+            (2d) Collectibles (28%) gain
+          </span>
+          <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${flaggedFields['divCollectibles'] && !reviewedFields?.has('divCollectibles') ? styles.fieldInputHighlightedOrange : ''}`} readOnly value={FORM_DATA.box2d_collectibles} placeholder={flaggedFields['divCollectibles'] ? 'Not imported' : '—'} />
         </div>
-        <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>(3) Nondividend distributions</span>
-          <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box3_nonDivDistrib} placeholder="—" />
+        <ValidationNote fieldKey="divCollectibles" />
+        <div className={`${styles.fieldRow} ${flaggedFields['divNonDiv'] && !reviewedFields?.has('divNonDiv') ? styles.fieldRowHasNote : ''}`}>
+          <span className={`${styles.fieldLabel} ${flaggedFields['divNonDiv'] && !reviewedFields?.has('divNonDiv') ? styles.fieldLabelFlagged : ''}`}>
+            {flaggedFields['divNonDiv'] && !reviewedFields?.has('divNonDiv') && <span className={styles.issueIndicator} />}
+            (3) Nondividend distributions
+          </span>
+          <input className={`${styles.fieldInput} ${styles.fieldInputSmall} ${flaggedFields['divNonDiv'] && !reviewedFields?.has('divNonDiv') ? styles.fieldInputHighlightedOrange : ''}`} readOnly value={FORM_DATA.box3_nonDivDistrib} placeholder={flaggedFields['divNonDiv'] ? 'Not imported' : '—'} />
         </div>
+        <ValidationNote fieldKey="divNonDiv" />
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>(4) Federal income tax withheld</span>
           <input className={`${styles.fieldInput} ${styles.fieldInputSmall}`} readOnly value={FORM_DATA.box4_fedTaxWithheld} placeholder="—" />

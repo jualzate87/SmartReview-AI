@@ -17,11 +17,11 @@ import QuestionnairePane from './QuestionnairePane'
 import Tooltip from './Tooltip'
 import styles from '../../styles/data-review/AgentReportPane.module.css'
 
-// 6 total items across all categories
-const TOTAL_REVIEW_ITEMS = 6
+// 12 total items across all categories
+const TOTAL_REVIEW_ITEMS = 15
 
 // Ordered list of issue keys for guided "Next" navigation
-const GUIDED_ORDER = ['w2Box12', 'w2Ein', 'divCollectibles', 'divNonDiv', 'wagesConfidence', 'capitalGainNew'] as const
+const GUIDED_ORDER = ['w2Box12', 'w2Ein', 'divCollectibles', 'divNonDiv', 'wagesConfidence', 'capitalGainNew', 'irsEstPenalty', 'irsAmt', 'irsCapGainWithholding', 'missingPriorAgi', 'missingStateReturn', 'missingEstPayments', 'optW4Adjustment', 'optQbi', 'optIra'] as const
 type IssueKey = typeof GUIDED_ORDER[number]
 
 interface AgentReportPaneProps {
@@ -46,8 +46,9 @@ interface AgentReportPaneProps {
 }
 
 const REPORT_CARDS = [
-  { label: 'Scan quality & inputs', keys: ['w2Box12', 'w2Ein', 'divCollectibles', 'divNonDiv', 'wagesConfidence'], badgeColor: 'red'  as const, position: 'first' },
-  { label: 'YoY analysis',          keys: ['capitalGainNew'],                                                       badgeColor: 'red'  as const, position: 'last' },
+  { label: 'Critical',        keys: ['w2Ein', 'irsEstPenalty', 'irsAmt', 'missingPriorAgi'],                                                          badgeColor: 'red'    as const, position: 'first' },
+  { label: 'Review required', keys: ['w2Box12', 'wagesConfidence', 'divCollectibles', 'divNonDiv', 'irsCapGainWithholding', 'missingStateReturn', 'missingEstPayments', 'capitalGainNew'], badgeColor: 'orange' as const, position: 'middle' },
+  { label: 'Opportunities',   keys: ['optW4Adjustment', 'optQbi', 'optIra'],                                                                          badgeColor: 'blue'   as const, position: 'last' },
 ]
 
 const CARD_ICONS = [
@@ -84,7 +85,7 @@ const W2_BOX12_ISSUE = {
 
 const W2_EIN_ISSUE = {
   issueKey: 'w2Ein',
-  dotColor: 'red' as const,
+  dotColor: 'red' as const, // Critical
   title: 'W-2 EIN not found',
   category: 'Scan quality & inputs',
   summary: 'Employer EIN not found in the document. Required for e-filing — enter manually.',
@@ -198,18 +199,256 @@ const CAPITAL_GAIN_NEW_ISSUE = {
   viewSourceField: 'capitalGain',
 }
 
+// ── IRS Compliance Issues ─────────────────────────────────────────────────
+
+const IRS_EST_PENALTY_ISSUE = {
+  issueKey: 'irsEstPenalty',
+  dotColor: 'red' as const,
+  title: 'Estimated tax penalty: $3,814',
+  category: 'IRS compliance',
+  summary: 'An estimated tax penalty of $3,814 appears on line 38. IRS requires quarterly payments when withholding falls short.',
+  taxImpact: 'The $3,814 penalty (line 38) is added to the amount owed and is not deductible. Total amount due is $101,169 ($97,355 + $3,814).',
+  rootCause: 'Jessica\'s total withholding ($40,765) covered only 29.5% of her $138,120 tax liability. The IRS safe-harbor threshold requires either 100% of prior-year tax or 110% for high-income filers.',
+  tableRows: [
+    { label: 'Total tax (line 24)',        cols: ['$138,120', '—', '—'],   badge: undefined,        total: false },
+    { label: 'Total withholding (line 33)', cols: ['$40,765',  '—', '—'],  badge: undefined,        total: false },
+    { label: 'Estimated tax penalty (line 38)', cols: ['$3,814', 'Due', '!'], badge: 'red' as const, total: true },
+  ],
+  tableHeaders: ['Item', 'Amount', 'Status', ''],
+  suggestedActions: [
+    'Advise Jessica to set up 2025 quarterly estimated payments to avoid a repeat penalty.',
+    'Review whether safe-harbor payments were made in 2024 — if so, penalty may be waivable.',
+    'Consider adjusting W-4 withholding at Tech Circle to cover next year\'s liability.',
+  ],
+  viewSourceLabel: 'View Prior Year 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'totalTax',
+}
+
+const IRS_AMT_ISSUE = {
+  issueKey: 'irsAmt',
+  dotColor: 'red' as const,
+  title: 'AMT exposure at this income level',
+  category: 'IRS compliance',
+  summary: 'AGI of $646,776 places Jessica above the AMT exemption phase-out threshold. Form 6251 should be attached.',
+  taxImpact: 'The 2024 AMT exemption phases out at $609,350 for single filers. At Jessica\'s income, the effective exemption is reduced, increasing potential AMT liability. Form 6251 must be filed to calculate and document AMT.',
+  rootCause: 'High dividend and capital gain income combined with AGI above phase-out thresholds triggers an AMT review requirement for this return.',
+  tableRows: [
+    { label: 'AGI (line 11)',           cols: ['$646,776', '—', '—'],         badge: undefined,           total: false },
+    { label: 'AMT phase-out threshold', cols: ['$609,350', 'Exceeded', '!'],   badge: 'red' as const,      total: false },
+    { label: 'Form 6251',               cols: ['—',        'Required', '—'],   badge: 'orange' as const,   total: false },
+  ],
+  tableHeaders: ['Item', 'Value', 'Status', ''],
+  suggestedActions: [
+    'Complete Form 6251 (Alternative Minimum Tax) and attach to the return.',
+    'Review whether ISO stock options or other AMT preference items apply.',
+    'Confirm software has calculated AMT and included it in total tax if triggered.',
+  ],
+  viewSourceLabel: 'View Prior Year 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'agi',
+}
+
+const IRS_CAP_GAIN_WITHHOLDING_ISSUE = {
+  issueKey: 'irsCapGainWithholding',
+  dotColor: 'orange' as const,
+  title: 'Capital gains with no withholding',
+  category: 'IRS compliance',
+  summary: '$194,600 in capital gains were reported with no associated withholding. 2025 estimated payments may be required.',
+  taxImpact: 'At Jessica\'s income level, long-term capital gains are taxed at 20% plus 3.8% Net Investment Income Tax — up to $46,300 in additional tax on the gain alone, with no withholding applied.',
+  rootCause: 'Capital gains from asset sales typically have no automatic withholding. Without quarterly estimated payments, the IRS will assess an underpayment penalty for 2025.',
+  tableRows: [
+    { label: 'Capital gain (line 7)',    cols: ['$194,600', '—', '—'],       badge: undefined,          total: false },
+    { label: 'Withholding on gain',      cols: ['$0',       'None', '!'],     badge: 'orange' as const,  total: false },
+    { label: 'Estimated NIIT exposure',  cols: ['~$7,395',  'Review', '—'],   badge: 'orange' as const,  total: false },
+  ],
+  tableHeaders: ['Item', 'Amount', 'Status', ''],
+  suggestedActions: [
+    'Advise Jessica to make 2025 Q1 estimated payment covering capital gain tax.',
+    'Confirm whether the gain is short-term (ordinary rates) or long-term (preferential rates).',
+    'Review Net Investment Income Tax (Form 8960) — likely applies at this income level.',
+  ],
+  viewSourceLabel: 'View Prior Year 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'capitalGain',
+}
+
+// ── Missing Information Issues ────────────────────────────────────────────
+
+const MISSING_PRIOR_AGI_ISSUE = {
+  issueKey: 'missingPriorAgi',
+  dotColor: 'orange' as const,
+  title: 'Prior-year AGI not on file',
+  category: 'Missing information',
+  summary: 'Prior-year AGI is required for e-file PIN validation. Not found in any imported document.',
+  taxImpact: 'Without the correct prior-year AGI, the IRS cannot validate the e-file PIN. The return cannot be submitted electronically until this is confirmed.',
+  rootCause: 'The 2023 return was not imported and no prior-year AGI was recorded during client onboarding.',
+  tableRows: [
+    { label: '2023 AGI (e-file PIN)', cols: ['—', 'Missing', '!'], badge: 'orange' as const, total: false },
+  ],
+  tableHeaders: ['Field', 'Value', 'Status', ''],
+  suggestedActions: [
+    'Ask Jessica to provide her 2023 prior-year AGI.',
+    'Enter it in the e-file section of the return.',
+    'Alternatively, use the IRS Get Transcript tool to retrieve it.',
+  ],
+  viewSourceLabel: 'View Prior Year 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: undefined,
+}
+
+const MISSING_STATE_RETURN_ISSUE = {
+  issueKey: 'missingStateReturn',
+  dotColor: 'orange' as const,
+  title: 'CA state filing likely required',
+  category: 'Missing information',
+  summary: 'Jessica\'s address is Middlefield, CA. No California state return information was found in any imported document.',
+  taxImpact: 'California taxes all income including capital gains at ordinary rates (up to 13.3%). At Jessica\'s income level, CA state tax liability could exceed $80,000.',
+  rootCause: 'No CA state documents (CA W-2 withholding, CA 540 prior return) were imported. State filing requirement is inferred from the address on Form 1040.',
+  tableRows: [
+    { label: 'CA state return (CA 540)', cols: ['—', 'Not started', '!'], badge: 'orange' as const, total: false },
+    { label: 'CA withholding on W-2',    cols: ['—', 'Verify', '?'],      badge: 'orange' as const, total: false },
+  ],
+  tableHeaders: ['Item', 'Value', 'Status', ''],
+  suggestedActions: [
+    'Confirm California state filing requirement with Jessica.',
+    'Prepare Form CA 540 — capital gains are taxed at ordinary CA rates.',
+    'Check W-2 Box 17 for CA state withholding amount.',
+  ],
+  viewSourceLabel: 'View W-2',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
+  viewSourceField: 'wages',
+}
+
+const MISSING_EST_PAYMENTS_ISSUE = {
+  issueKey: 'missingEstPayments',
+  dotColor: 'orange' as const,
+  title: 'No estimated tax payments recorded',
+  category: 'Missing information',
+  summary: 'Line 26 shows $0 in 2024 estimated payments. Confirm with Jessica whether quarterly payments were made.',
+  taxImpact: 'If estimated payments were made but not recorded, the amount owed ($97,355) would decrease and the penalty ($3,814) may be reduced or eliminated.',
+  rootCause: 'No 1040-ES payment records were imported. Either no payments were made, or they were made but not captured during document import.',
+  tableRows: [
+    { label: '2024 estimated payments (line 26)', cols: ['$0', 'Unconfirmed', '?'], badge: 'orange' as const, total: false },
+  ],
+  tableHeaders: ['Field', 'Recorded', 'Status', ''],
+  suggestedActions: [
+    'Ask Jessica if she made any 2024 Form 1040-ES quarterly payments.',
+    'If yes, enter the total on line 26 — this reduces the amount owed.',
+    'IRS account transcript can confirm payments if Jessica is unsure.',
+  ],
+  viewSourceLabel: 'View Prior Year 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'totalPayments',
+}
+
+// ── Optimization Suggestions ──────────────────────────────────────────────
+
+const OPT_W4_ISSUE = {
+  issueKey: 'optW4Adjustment',
+  dotColor: 'blue' as const,
+  title: 'Consider adjusting W-4 withholding',
+  category: 'Optimization',
+  summary: 'Jessica owed $97,355 this year. Increasing W-4 withholding at Tech Circle could eliminate next year\'s penalty.',
+  taxImpact: 'To meet the 110% safe-harbor rule for high-income filers, Jessica would need to withhold at least $151,932 in 2025 (110% × $138,120). Current withholding pace is $15,840/year from wages alone.',
+  rootCause: 'The large balance due ($97,355) is driven almost entirely by dividend and capital gain income, which has no automatic withholding.',
+  tableRows: [
+    { label: 'Current annual withholding', cols: ['$15,840',  '—', '—'],      badge: undefined,        total: false },
+    { label: '110% safe-harbor target',    cols: ['$151,932', 'Gap', '—'],    badge: 'blue' as const,  total: false },
+    { label: 'Additional needed/year',     cols: ['$136,092', 'Suggestion', '→'], badge: 'blue' as const, total: true },
+  ],
+  tableHeaders: ['Item', 'Amount', 'Status', ''],
+  suggestedActions: [
+    'Advise Jessica to submit a new W-4 to Tech Circle requesting higher withholding.',
+    'Alternatively, set up quarterly 1040-ES payments to cover investment income.',
+    'Target at least 110% of 2024 total tax ($151,932) to avoid 2025 penalty.',
+  ],
+  viewSourceLabel: 'View W-2',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
+  viewSourceField: 'withholding',
+}
+
+const OPT_QBI_ISSUE = {
+  issueKey: 'optQbi',
+  dotColor: 'blue' as const,
+  title: 'QBI deduction — verify eligibility',
+  category: 'Optimization',
+  summary: 'No QBI deduction (line 13) was claimed. If Tech Circle income includes qualified business income, Jessica may be eligible for up to 20% deduction.',
+  taxImpact: 'A QBI deduction of 20% on qualifying income could meaningfully reduce taxable income. At Jessica\'s marginal rate, each $10,000 of QBI deduction saves approximately $3,700 in federal tax.',
+  rootCause: 'The return shows $0 on line 13. This may be correct if Tech Circle pays W-2 wages only — but should be confirmed if Jessica has any pass-through business income.',
+  tableRows: [
+    { label: 'QBI deduction (line 13)', cols: ['$0', 'Not claimed', '→'], badge: 'blue' as const, total: false },
+  ],
+  tableHeaders: ['Field', 'Value', 'Status', ''],
+  suggestedActions: [
+    'Confirm whether Jessica has any pass-through business income (S-corp, partnership, sole prop).',
+    'If eligible, complete Form 8995 and claim the deduction on line 13.',
+    'Note: W-2 wages alone do not qualify — business income required.',
+  ],
+  viewSourceLabel: 'View Prior Year 1040',
+  viewSourceTab: 'prior-1040' as const,
+  viewSourceSubTab: undefined,
+  viewSourceField: 'taxableIncome',
+}
+
+const OPT_IRA_ISSUE = {
+  issueKey: 'optIra',
+  dotColor: 'blue' as const,
+  title: 'No IRA contribution found',
+  category: 'Optimization',
+  summary: 'No IRA deduction was claimed. Jessica may be eligible to contribute up to $7,000 for 2024 and reduce taxable income.',
+  taxImpact: 'A $7,000 traditional IRA contribution (if deductible) would reduce taxable income by $7,000 — saving approximately $2,590 in federal tax at Jessica\'s marginal rate. Deadline is April 15, 2025.',
+  rootCause: 'No IRA contribution deduction appears on the return. Deductibility depends on whether Jessica is covered by a workplace retirement plan — which should be confirmed via W-2 Box 12 (once resolved).',
+  tableRows: [
+    { label: '2024 IRA contribution', cols: ['$0',    'Not claimed', '→'], badge: 'blue' as const, total: false },
+    { label: 'Max deductible (2024)', cols: ['$7,000', 'Eligible?', '—'], badge: 'blue' as const,  total: false },
+    { label: 'Tax savings (est.)',    cols: ['~$2,590', 'Opportunity', '→'], badge: 'blue' as const, total: true },
+  ],
+  tableHeaders: ['Item', 'Amount', 'Status', ''],
+  suggestedActions: [
+    'Confirm whether Jessica is covered by a workplace retirement plan (W-2 Box 13).',
+    'If not covered, a full $7,000 traditional IRA deduction is likely available.',
+    'Contributions for 2024 can be made until April 15, 2025.',
+  ],
+  viewSourceLabel: 'View W-2',
+  viewSourceTab: 'w2s' as const,
+  viewSourceSubTab: 'techCircle' as const,
+  viewSourceField: 'wages',
+}
+
 // Maps each issue key to the 1040 field it should highlight
 const ISSUE_FIELD: Partial<Record<IssueKey, string>> = {
-  w2Box12:        'wages',
-  w2Ein:          'wages',
-  divCollectibles:'qualifiedDivs',
-  divNonDiv:      'ordinaryDivs',
-  wagesConfidence:'wages',
-  capitalGainNew: 'capitalGain',
+  w2Box12:               'wages',
+  w2Ein:                 'wages',
+  divCollectibles:       'qualifiedDivs',
+  divNonDiv:             'ordinaryDivs',
+  wagesConfidence:       'wages',
+  capitalGainNew:        'capitalGain',
+  irsEstPenalty:         'totalTax',
+  irsAmt:                'agi',
+  irsCapGainWithholding: 'capitalGain',
+  missingPriorAgi:       undefined,
+  missingStateReturn:    'wages',
+  missingEstPayments:    'totalPayments',
+  optW4Adjustment:       'withholding',
+  optQbi:                'taxableIncome',
+  optIra:                'wages',
 }
 
 // All issues as a flat list for getIssueConfig lookup
-const ALL_ISSUES = [W2_BOX12_ISSUE, W2_EIN_ISSUE, DIV_COLLECTIBLES_ISSUE, DIV_NONDIV_ISSUE, WAGES_CONFIDENCE_ISSUE, CAPITAL_GAIN_NEW_ISSUE]
+const ALL_ISSUES = [
+  W2_BOX12_ISSUE, W2_EIN_ISSUE, DIV_COLLECTIBLES_ISSUE, DIV_NONDIV_ISSUE, WAGES_CONFIDENCE_ISSUE, CAPITAL_GAIN_NEW_ISSUE,
+  IRS_EST_PENALTY_ISSUE, IRS_AMT_ISSUE, IRS_CAP_GAIN_WITHHOLDING_ISSUE,
+  MISSING_PRIOR_AGI_ISSUE, MISSING_STATE_RETURN_ISSUE, MISSING_EST_PAYMENTS_ISSUE,
+  OPT_W4_ISSUE, OPT_QBI_ISSUE, OPT_IRA_ISSUE,
+]
 
 export default function AgentReportPane({
   onClose,
@@ -495,7 +734,7 @@ export default function AgentReportPane({
                     <span className={styles.cardLabel}>{card.label}</span>
                     {cardDone
                       ? <span className={`${styles.badge} ${styles.badgeGreen}`}>✓</span>
-                      : <span className={`${styles.badge} ${card.badgeColor === 'red' ? styles.badgeRed : styles.badgeBlue}`}>{remaining}</span>
+                      : <span className={`${styles.badge} ${card.badgeColor === 'red' ? styles.badgeRed : card.badgeColor === 'orange' ? styles.badgeOrange : styles.badgeBlue}`}>{remaining}</span>
                     }
                   </div>
                   <ChevronDown size="small" className={`${styles.chevron} ${expandedCard === card.label ? styles.chevronUp : ''}`} />
@@ -513,7 +752,7 @@ export default function AgentReportPane({
                       return (
                         <button key={key} className={`${styles.findingInner} ${isReviewed ? styles.findingInnerReviewed : ''}`} onClick={() => onHighlightField?.(ISSUE_FIELD[key as IssueKey] ?? null)}>
                           <div className={styles.findingTitleRow}>
-                            {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
+                            {isReviewed ? <span className={styles.findingCheckIcon}><CircleCheck size="small" /></span> : <span className={styles.findingDot} style={{ background: issue.dotColor === 'blue' ? '#0077c5' : issue.dotColor === 'orange' ? '#d68000' : '#c22929' }} />}
                             <span className={styles.findingTitle}>{issue.title}</span>
                             <span className={styles.issueChip}>{issueNum} of {GUIDED_ORDER.length}</span>
                             {isReviewed && <span className={styles.findingReviewedBadge}>Reviewed</span>}
